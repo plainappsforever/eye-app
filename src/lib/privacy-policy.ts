@@ -1,11 +1,11 @@
 /**
  * RELEASE_KIT 1c row 12 / Appendix D (D92): the privacy policy shipped inside the app, so it reads
  * offline and is the same text as the web page. Apple 5.1.1 and Play's User Data policy want the
- * policy reachable in the app. Owner placeholders: the web address (taulon.org, not deployed yet),
+ * policy reachable in the app. Owner placeholders: the web address (Plain Apps site),
  * provider name and postal address — fill them before a store upload. Wording: L26, D15 (no claims).
  */
-export const PRIVACY_POLICY_URL = 'https://taulon.org/eye-rest-move/privacy/';
-export const PRIVACY_CONTACT = 'info@taulon.org';
+export const PRIVACY_POLICY_URL = 'https://plainapps.dfdsfdsfsdf.workers.dev/apps/eye-rest-move/privacy';
+export const PRIVACY_CONTACT = 'plainapps@tuta.com';
 export const PRIVACY_LAST_UPDATED = '1 October 2026';
 export const PRIVACY_PROVIDER = '[DEVELOPER NAME], [POSTAL ADDRESS]';
 

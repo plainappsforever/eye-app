@@ -3,8 +3,8 @@ import { PRIVACY_POLICY_URL, PRIVACY_SECTIONS } from './privacy-policy';
 // RELEASE_KIT 1c row 12: the in-app policy says what v2.1 does (L26).
 const text = PRIVACY_SECTIONS.flatMap((s) => [s.heading, ...s.paragraphs, ...(s.bullets ?? []), ...(s.after ?? [])]).join('\n');
 
-it('points to the placeholder page on taulon.org (owner deploys it)', () => {
-  expect(PRIVACY_POLICY_URL).toMatch(/^https:\/\/taulon\.org\//);
+it('points to the privacy page on the Plain Apps site', () => {
+  expect(PRIVACY_POLICY_URL).toMatch(/^https:\/\/plainapps\.dfdsfdsfsdf\.workers\.dev\//);
 });
 
 it('names every permission the app can ask for', () => {
