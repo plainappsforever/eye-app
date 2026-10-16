@@ -1,0 +1,125 @@
+appId: ${APP_ID}
+name: Home-screen widget (G11) — pin, Pause 1 h and Resume from the widget change Home
+tags:
+  - android-only
+# Absolute preconditions: counting on, not paused (Turn off then Turn on clears any pause). The
+# widget is pinned through the dev-only "Pin widget" button (the launcher's own dialog); if one is
+# already on the home screen the button reports "alreadyAdded" and no dialog appears.
+---
+- runFlow: subflows/launch.yaml
+- runFlow: subflows/restore-defaults.yaml
+- tapOn:
+    id: toggle-counting
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    id: toggle-counting
+    text: "Turn off"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+# Move hours all day, so the widget's move line ("Move at …") shows whatever time the flow runs.
+- tapOn:
+    id: debug-move-all-day
+- assertVisible: "Move hours: weekdays 9–18"
+- scrollUntilVisible:
+    element:
+      id: debug-pin-widget
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: debug-pin-widget
+# The launcher's "Add to home screen" dialog (only when no widget is placed yet).
+- extendedWaitUntil:
+    visible:
+      text: "Add to home screen|widget: alreadyAdded"
+    timeout: 5000
+- runFlow:
+    when:
+      visible: "Add to home screen"
+    commands:
+      - takeScreenshot: widget-pin-dialog
+      - tapOn: "Add to home screen"
+- extendedWaitUntil:
+    visible:
+      id: debug-widget-result
+      text: "widget: (requested|alreadyAdded)"
+    timeout: 5000
+
+# On the home screen: the countdown is running and the button pauses for an hour.
+- pressKey: Home
+- runFlow: subflows/find-widget.yaml
+- extendedWaitUntil:
+    visible: "Next break in"
+    timeout: 10000
+- assertVisible: ".* counted"
+# MOVE_SPEC M7: the second line with the next move reminder.
+- assertVisible: "Move at .*"
+- takeScreenshot: widget-counting
+- tapOn: "Pause 1 h"
+- extendedWaitUntil:
+    visible: "Paused until.*"
+    timeout: 5000
+- assertVisible: "Resume"
+- launchApp
+# (30 s: on a loaded Mac the dev client can take long to come back to the front.)
+- extendedWaitUntil:
+    visible:
+      id: status-label
+      text: "Paused until.*"
+    timeout: 30000
+
+# Resume from the widget → counting again, and Home agrees.
+- pressKey: Home
+- runFlow: subflows/find-widget.yaml
+- tapOn: "Resume"
+- extendedWaitUntil:
+    visible: "Next break in"
+    timeout: 5000
+- assertVisible: "Pause 1 h"
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: toggle-counting
+      text: "Turn off"
+    timeout: 10000
+- assertNotVisible:
+    id: status-label
+    text: "Paused.*"
+
+# Eye breaks off: the widget counts down to the move reminder instead (MOVE_SPEC M7).
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: eye-toggle
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: eye-toggle
+- assertVisible: "Eye breaks: Off"
+- tapOn:
+    id: nav-back
+- pressKey: Home
+- runFlow: subflows/find-widget.yaml
+- extendedWaitUntil:
+    visible: "Next move in"
+    timeout: 10000
+- assertNotVisible: "Move at .*"
+- takeScreenshot: widget-move-only
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 30000
+- runFlow: subflows/restore-defaults.yaml

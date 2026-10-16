@@ -1,0 +1,89 @@
+appId: ${APP_ID}
+name: Release build - break screen counts down, completes, and Skip works
+# Release builds have no Debug section (no 3 s break): this flow uses the real 20 s break chip.
+# Run only against the preview/production build: scripts/e2e.sh <platform> preview .maestro/release/break.yaml
+---
+- runFlow: ../subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: break-20
+    timeout: 45000
+- tapOn:
+    id: break-20
+- assertVisible:
+    id: break-20
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: variant-blink
+    timeout: 45000
+- tapOn:
+    id: variant-blink
+- assertVisible:
+    id: variant-blink
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: variant-why
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: variant-why
+- assertVisible:
+    id: variant-note
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen
+- tapOn:
+    id: break-now
+- assertVisible:
+    id: break-screen
+- assertVisible:
+    id: break-countdown
+- assertVisible:
+    id: break-instruction
+    text: "Close your eyes fully, squeeze gently, open. Repeat slowly."
+- extendedWaitUntil:
+    visible:
+      id: break-done
+    timeout: 40000
+# Maestro iOS: an assertion right after a long wait fails at once while "Done" is still on screen; let it leave first.
+- waitForAnimationToEnd:
+    timeout: 4000
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000
+- tapOn:
+    id: break-now
+- assertVisible:
+    id: break-screen
+- tapOn:
+    id: break-skip
+- assertVisible:
+    id: home-screen
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: variant-far
+    timeout: 45000
+- tapOn:
+    id: variant-far
+- assertVisible:
+    id: variant-far
+    selected: true
+- tapOn:
+    id: nav-back
+- tapOn:
+    id: break-now
+- assertVisible:
+    id: break-instruction
+    text: "Look at something far away. Blink."
+- tapOn:
+    id: break-skip
+- assertVisible:
+    id: home-screen

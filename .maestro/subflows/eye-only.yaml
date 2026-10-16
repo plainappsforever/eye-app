@@ -1,0 +1,28 @@
+appId: ${APP_ID}
+# V2_PLAN rule 17: flows that rely on eye timing switch move breaks OFF (and eye breaks on), so a
+# move or combined reminder can never cover what they check. Run on the Settings screen; leaves it
+# scrolled down to the Move breaks section.
+---
+- scrollUntilVisible:
+    element:
+      id: eye-toggle
+    direction: UP
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Eye breaks: Off"
+    commands:
+      - tapOn:
+          id: eye-toggle
+- assertVisible: "Eye breaks: On"
+- scrollUntilVisible:
+    element:
+      id: move-toggle
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Move breaks: On"
+    commands:
+      - tapOn:
+          id: move-toggle
+- assertVisible: "Move breaks: Off"

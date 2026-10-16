@@ -1,0 +1,240 @@
+appId: ${APP_ID}
+name: Release build - Move break screen (type, length, Done / Skip, combined, Stand up eye break, Stats)
+# Release builds have no Debug section: the move break runs at its real 1 min length and eye breaks at 20 s.
+# The break screen is opened through its link (what a reminder's body tap does): ${SCHEME}://break?kind=...
+---
+- runFlow: ../subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: variant-far
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: variant-far
+- scrollUntilVisible:
+    element:
+      id: break-20
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: break-20
+- scrollUntilVisible:
+    element:
+      id: move-variant-stretch
+    centerElement: true
+    timeout: 45000
+- assertVisible:
+    id: move-variant-walk
+- tapOn:
+    id: move-variant-walk
+- assertVisible:
+    id: move-variant-instruction
+    text: "Stand up and walk around for a minute or two."
+- tapOn:
+    id: move-variant-stretch
+- assertVisible:
+    id: move-variant-stretch
+    selected: true
+- assertVisible:
+    id: move-variant-instruction
+    text: "Stand up, reach up tall and roll your shoulders slowly."
+- tapOn:
+    id: move-variant-why
+- assertVisible:
+    id: move-variant-note
+    text: "Short breaks from a task reduced fatigue.*"
+- tapOn:
+    id: move-variant-why
+- scrollUntilVisible:
+    element:
+      id: move-break-5
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: move-break-5
+- assertVisible:
+    id: move-break-5
+    selected: true
+- tapOn:
+    id: move-break-1
+- assertVisible:
+    id: move-break-1
+    selected: true
+- tapOn:
+    id: nav-back
+
+# Empty history, so every count below is absolute.
+- tapOn:
+    id: open-stats
+- extendedWaitUntil:
+    visible:
+      id: stats-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: stats-delete
+    timeout: 45000
+- tapOn:
+    id: stats-delete
+- tapOn: "(?i)delete"
+- scrollUntilVisible:
+    element:
+      id: stats-move-breaks
+    direction: UP
+    timeout: 45000
+- assertVisible:
+    id: stats-move-breaks
+    text: "Moved 0 · Noticed automatically 0 · Skipped 0 · Snoozed 0"
+- tapOn:
+    id: nav-back
+
+# A move break: the chosen type's line and a countdown; Skip.
+- openLink: ${SCHEME}://break?kind=move
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible:
+      id: break-instruction
+      text: "Stand up, reach up tall and roll your shoulders slowly."
+    timeout: 15000
+- assertVisible:
+    id: break-countdown
+- tapOn:
+    id: break-skip
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000
+
+# The combined break: its own line; Skip.
+- openLink: ${SCHEME}://break?kind=both
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible:
+      id: break-instruction
+      text: "Stand up, walk a little and look into the distance."
+    timeout: 15000
+- tapOn:
+    id: break-skip
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000
+
+# Done counts: a move break and the combined one both run the full move length (1 min here).
+- openLink: ${SCHEME}://break?kind=move
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible:
+      id: stat-moved
+      text: "Moved: 1"
+    timeout: 120000
+- waitForAnimationToEnd:
+    timeout: 4000
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000
+- openLink: ${SCHEME}://break?kind=both
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible:
+      id: stat-moved
+      text: "Moved: 2"
+    timeout: 120000
+
+# A finished eye "Stand up" break also counts as moved.
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: variant-stand
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: variant-stand
+- tapOn:
+    id: nav-back
+- tapOn:
+    id: break-now
+- extendedWaitUntil:
+    visible:
+      id: break-done
+    timeout: 40000
+# Maestro iOS: an assertion right after a long wait fails at once while "Done" is still on screen; let it leave first.
+- waitForAnimationToEnd:
+    timeout: 4000
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000
+- assertVisible:
+    id: stat-moved
+    text: "Moved: 3"
+
+# Stats: the Move block counts them (counts only).
+- tapOn:
+    id: open-stats
+- extendedWaitUntil:
+    visible:
+      id: stats-screen
+    timeout: 10000
+- assertVisible:
+    id: stats-move
+- assertVisible:
+    id: stats-move-breaks
+    text: "Moved 3 · Noticed automatically 0 · Skipped 2 · Snoozed 0"
+- tapOn:
+    id: nav-back
+
+# Put the values back: move type Walk, 2 min, eye Look far.
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: variant-far
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: variant-far
+- scrollUntilVisible:
+    element:
+      id: move-variant-walk
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: move-variant-walk
+- scrollUntilVisible:
+    element:
+      id: move-break-2
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: move-break-2
+- tapOn:
+    id: nav-back

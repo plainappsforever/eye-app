@@ -1,0 +1,58 @@
+appId: ${APP_ID}
+name: Quick Settings tile (G6) with the G14 explanation sheet first
+tags:
+  - android-only
+# Needs Android 13+ and the tile NOT yet in Quick Settings; remove it first with
+#   adb -s <serial> shell cmd statusbar remove-tile <pkg>/expo.modules.exposuremonitor.EyeTileService
+# If it is already added, the flow only checks that Settings says so (no button, no dialog).
+---
+- runFlow: subflows/launch.yaml
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+# (The Settings screen grew with the move sections in P7a: allow a longer scroll.)
+- scrollUntilVisible:
+    element:
+      text: "Quick Settings tile"
+    centerElement: true
+    timeout: 45000
+- runFlow:
+    when:
+      visible:
+        id: add-tile
+    commands:
+      # G14: the sheet comes first; "Not now" changes nothing.
+      - tapOn:
+          id: add-tile
+      - assertVisible:
+          id: permission-sheet-title
+          text: "Add the Breaks tile"
+      - assertVisible: "The tile turns all your reminders on or off from Quick Settings.*"
+      - tapOn:
+          id: permission-sheet-not-now
+      - assertNotVisible:
+          id: permission-sheet
+      - assertVisible:
+          id: add-tile
+      # Continue → the system's own "Add tile" dialog → added.
+      - tapOn:
+          id: add-tile
+      - tapOn:
+          id: permission-sheet-continue
+      - extendedWaitUntil:
+          visible: "Add tile"
+          timeout: 10000
+      - takeScreenshot: tile-system-dialog
+      - tapOn: "Add tile"
+- extendedWaitUntil:
+    visible:
+      id: tile-added
+    timeout: 10000
+- assertNotVisible:
+    id: add-tile

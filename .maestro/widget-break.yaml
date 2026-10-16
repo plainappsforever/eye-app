@@ -1,0 +1,85 @@
+appId: ${APP_ID}
+name: Widget offers the break while a reminder waits (G11) and returns to the launcher after it (G4)
+tags:
+  - android-only
+# Absolute preconditions: fast reminders (30 s, balanced), then the nudge back at the strength
+# delay (3 min) so the reminder stays unanswered long enough; break length 3 s. Needs the widget on
+# the home screen (widget.yaml pins it). Restores every debug value at the end.
+---
+- runFlow: subflows/launch.yaml
+- runFlow: subflows/fast-reminders.yaml
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+- tapOn:
+    id: debug-nudge-10s
+- assertVisible:
+    id: debug-nudge-ms
+    text: "nudge: strength"
+- tapOn:
+    id: debug-set-break-3s
+- assertVisible:
+    id: debug-break-ms
+    text: "breakMs: 3000"
+- scrollUntilVisible:
+    element:
+      id: debug-pin-widget
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: debug-pin-widget
+- extendedWaitUntil:
+    visible:
+      text: "Add to home screen|widget: alreadyAdded"
+    timeout: 5000
+- runFlow:
+    when:
+      visible: "Add to home screen"
+    commands:
+      - tapOn: "Add to home screen"
+- tapOn:
+    id: nav-back
+# Restart the interval now (Turn off/on) and go to the launcher.
+- tapOn:
+    id: toggle-counting
+- tapOn:
+    id: toggle-counting
+- pressKey: Home
+- runFlow: subflows/find-widget.yaml
+- extendedWaitUntil:
+    visible: "Next break in"
+    timeout: 10000
+# The 30 s reminder fires; the widget says so while the nudge is pending.
+- extendedWaitUntil:
+    visible: "Time to look away"
+    timeout: 60000
+- assertVisible: "Tap to start a break"
+- takeScreenshot: widget-due
+# Let the heads-up banner (same title) collapse by itself before tapping the widget — swiping it
+# away would count as Skip and end the waiting state. (A wait for text that never appears.)
+- extendedWaitUntil:
+    visible: "wait-for-the-heads-up-to-collapse"
+    timeout: 9000
+    optional: true
+- tapOn: "Tap to start a break"
+- extendedWaitUntil:
+    visible:
+      id: break-screen
+    timeout: 10000
+# Opened from the widget: after the 3 s break, Done sends Eye Rest & Move to the back (G4).
+- extendedWaitUntil:
+    notVisible:
+      id: break-screen
+    timeout: 20000
+- extendedWaitUntil:
+    visible: "Next break in"
+    timeout: 10000
+
+- runFlow: subflows/launch.yaml
+- runFlow: subflows/restore-defaults.yaml

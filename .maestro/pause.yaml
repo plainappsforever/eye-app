@@ -1,0 +1,84 @@
+appId: ${APP_ID}
+name: Pause menu offers four options and pauses reminders
+tags:
+  - smoke
+---
+# Absolute preconditions: counting on, not paused (Turn off then Turn on clears any pause). The
+# previous flow may have left counting on or off: turn it off only when it is on.
+- runFlow: subflows/launch.yaml
+- runFlow:
+    when:
+      visible:
+        id: toggle-counting
+        text: "Turn off"
+    commands:
+      - tapOn:
+          id: toggle-counting
+- assertVisible:
+    id: toggle-counting
+    text: "Turn on"
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    id: toggle-counting
+    text: "Turn off"
+- assertNotVisible:
+    text: "Paused.*"
+
+# The menu lists exactly the four options and can be cancelled without pausing.
+- tapOn:
+    id: pause-menu-open
+- assertVisible:
+    id: pause-menu
+- assertVisible:
+    id: pause-15m
+- assertVisible:
+    id: pause-30m
+- assertVisible:
+    id: pause-1h
+- assertVisible:
+    id: pause-tomorrow
+- tapOn:
+    id: pause-cancel
+- assertNotVisible:
+    id: pause-menu
+- assertNotVisible:
+    text: "Paused.*"
+
+# Each option pauses; the status says "Paused until <time>".
+- tapOn:
+    id: pause-menu-open
+- tapOn:
+    id: pause-15m
+- assertVisible:
+    id: status-label
+    text: "Paused until.*"
+- tapOn:
+    id: pause-menu-open
+- tapOn:
+    id: pause-30m
+- assertVisible:
+    id: status-label
+    text: "Paused until.*"
+- tapOn:
+    id: pause-menu-open
+- tapOn:
+    id: pause-1h
+- assertVisible:
+    id: status-label
+    text: "Paused until.*"
+- tapOn:
+    id: pause-menu-open
+- tapOn:
+    id: pause-tomorrow
+- assertVisible:
+    id: status-label
+    text: "Paused until.*"
+
+# Leave counting on and unpaused for later flows.
+- tapOn:
+    id: toggle-counting
+- tapOn:
+    id: toggle-counting
+- assertNotVisible:
+    text: "Paused.*"

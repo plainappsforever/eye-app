@@ -1,0 +1,73 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <!-- G9 (D35): optional full-screen break, granted by the user in system settings (Firm only). -->
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+  <!-- G10 (D36): optional "Don't count these apps", granted by the user in Usage access settings. -->
+  <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+
+  <!-- G10 app picker: launchable apps only, no QUERY_ALL_PACKAGES (D36). -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.LAUNCHER" />
+    </intent>
+  </queries>
+
+  <application>
+    <service
+      android:name=".ExposureService"
+      android:exported="false"
+      android:foregroundServiceType="specialUse">
+      <!-- REVIEW_V2 S11 / RELEASE_KIT 4a: one service times both streams; text = the Play declaration. -->
+      <property
+        android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+        android:value="Timing of user-requested eye-rest and move reminders: counts continuous screen use and elapsed sitting time, and notes steps if the user turns that on, so a reminder can be shown at the right moment." />
+    </service>
+
+    <receiver
+      android:name=".BootReceiver"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <!-- S1 (D78): an update kills the process without onDestroy and START_STICKY does not apply. -->
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+      </intent-filter>
+    </receiver>
+
+    <receiver android:name=".WatchdogReceiver" android:exported="false" />
+    <receiver android:name=".NotificationActionReceiver" android:exported="false" />
+    <!-- MOVE_SPEC M1: wakes the device at the move due time (setAndAllowWhileIdle, no exact alarms). -->
+    <receiver android:name=".MoveAlarmReceiver" android:exported="false" />
+
+    <!-- G6: "Breaks" Quick Settings tile. ACTIVE_TILE = bound only when we ask (requestListeningState). -->
+    <service
+      android:name=".EyeTileService"
+      android:exported="true"
+      android:icon="@drawable/eyeapp_ic_tile"
+      android:label="Breaks"
+      android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter>
+        <action android:name="android.service.quicksettings.action.QS_TILE" />
+      </intent-filter>
+      <meta-data android:name="android.service.quicksettings.ACTIVE_TILE" android:value="true" />
+      <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE" android:value="true" />
+    </service>
+
+    <!-- G11 (D40): "Next break" home-screen widget; redrawn by the service on state changes. -->
+    <receiver
+      android:name=".EyeWidgetProvider"
+      android:exported="false"
+      android:label="@string/eyeapp_widget_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/eyeapp_widget_info" />
+    </receiver>
+  </application>
+</manifest>

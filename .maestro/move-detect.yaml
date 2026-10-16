@@ -1,0 +1,195 @@
+appId: ${APP_ID}
+name: Android "Notice when I've moved" - sheet, Physical activity prompt, simulated steps
+# Android only (MOVE_SPEC M5). The emulator has no step counter, so "Simulate 60 steps" (dev
+# Debug) feeds the same native path as real readings. Works with Physical activity allowed or not
+# (revoke it first to see the system prompt: adb -s <serial> shell pm revoke <pkg>
+# android.permission.ACTIVITY_RECOGNITION). Keep the screen on (svc power stayon true). Eye
+# breaks off here (V2_PLAN rule 17). Ends with detection off and the MOVE_SPEC defaults.
+tags:
+  - android-only
+---
+- pressKey: back
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- scrollUntilVisible:
+    element:
+      text: "Clear all"
+    timeout: 5000
+    optional: true
+- tapOn:
+    text: "Clear all"
+    optional: true
+- pressKey: back
+- runFlow: subflows/launch.yaml
+- runFlow:
+    file: subflows/move-fast.yaml
+    env:
+      EYE: "off"
+
+# 1. Turn it on: G14 sheet → Android's Physical activity prompt → Allow → On.
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: move-detect-toggle
+    centerElement: true
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Notice when I've moved: On"
+    commands:
+      - tapOn:
+          id: move-detect-toggle
+- assertVisible: "Notice when I've moved: Off"
+- assertVisible:
+    id: move-detect-unavailable
+- tapOn:
+    id: move-detect-toggle
+- runFlow:
+    when:
+      visible:
+        id: permission-sheet
+    commands:
+      - assertVisible: "Notice when you've moved"
+      - assertVisible: ".*never leave your phone.*"
+      - tapOn:
+          id: permission-sheet-continue
+      - extendedWaitUntil:
+          visible:
+            id: com.android.permissioncontroller:id/permission_allow_button
+          timeout: 10000
+      - tapOn:
+          id: com.android.permissioncontroller:id/permission_allow_button
+- extendedWaitUntil:
+    visible: "Notice when I've moved: On"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: rel-status-activity
+    timeout: 45000
+- assertVisible:
+    id: rel-status-activity
+    text: "OK: Allowed"
+
+# 2. Simulated steps with no reminder waiting: noticed +1, Home "· moved at". Turning counting
+# off and on first starts a fresh sitting stretch, so no reminder is due yet (the steps above took
+# part of the 60 s).
+- tapOn:
+    id: nav-back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn on"
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn off"
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: debug-move-stats
+    direction: UP
+    timeout: 45000
+- copyTextFrom:
+    id: debug-move-stats
+- evalScript: ${output.noticedBefore = parseInt(maestro.copiedText.match(/noticed (\d+)/)[1], 10)}
+- tapOn:
+    id: debug-steps-60
+- assertVisible:
+    id: debug-steps-result
+    text: "steps: simulated"
+- extendedWaitUntil:
+    visible:
+      id: debug-move-stats
+      text: ".*noticed ${output.noticedBefore + 1}"
+    timeout: 5000
+- tapOn:
+    id: nav-back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000
+- assertVisible:
+    id: move-line
+    text: ".* · moved at .*"
+
+# 3. With "Time to move" waiting in the shade, steps answer it: it disappears, noticed +1.
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- extendedWaitUntil:
+    visible: "Time to move"
+    timeout: 80000
+- pressKey: back
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+- tapOn:
+    id: debug-steps-60
+- assertVisible:
+    id: debug-steps-result
+    text: "steps: simulated"
+- extendedWaitUntil:
+    visible:
+      id: debug-move-stats
+      text: ".*noticed ${output.noticedBefore + 2}"
+    timeout: 5000
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- extendedWaitUntil:
+    notVisible: "Time to move"
+    timeout: 5000
+- pressKey: back
+
+# Clean up: detection off, counting off, the MOVE_SPEC defaults back.
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: move-detect-toggle
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: move-detect-toggle
+- assertVisible: "Notice when I've moved: Off"
+- tapOn:
+    id: nav-back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn on"
+- runFlow: subflows/restore-defaults.yaml
+- runFlow:
+    when:
+      visible:
+        text: "Turn on"
+    commands:
+      - tapOn:
+          id: toggle-counting

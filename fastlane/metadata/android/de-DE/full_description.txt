@@ -1,0 +1,34 @@
+Eye Rest & Move erinnert dich daran, deine Augen nach echter Bildschirmnutzung auszuruhen und nach langem Sitzen aufzustehen. Es zählt, solange dein Bildschirm in Benutzung ist, wartet bei Anrufen und verlangt nichts, bevor du loslegst.
+
+Kein Konto. Keine Werbung. Kein Abo. Funktioniert offline. Die App hat keine Internet-Berechtigung, und nichts von dem, was du in ihr tust, verlässt dein Handy.
+
+AUGENPAUSEN
+• Das Zählen beginnt, wenn du das Handy benutzt, und setzt sich zurück, wenn der Bildschirm eine kurze Weile aus war. Ein kurzer Blick aufs Handy startet nicht neu.
+• Standard ist der bekannte 20-20-20-Rhythmus (20 Minuten, 20 Sekunden). Du kannst Intervall und Pausenlänge ändern, aktive Zeiten und Wochentage festlegen oder 15 Minuten, 30 Minuten, eine Stunde oder bis morgen pausieren.
+• Drei Stärken: Sanft, Ausgewogen, Streng. Höchstens eine Nachfrage, nur wenn du das Handy weiter benutzt.
+• Antworten direkt in der Benachrichtigung: Pause starten, Später oder Erledigt. Wegwischen überspringt. Nach der Pause bist du wieder in der App, in der du warst.
+• Pausenarten: weit weg schauen, blinzeln, Augen schließen, aufstehen oder gemischt. Zu jeder gibt es einen Hinweis „Warum das?“, der sagt, welche Studien es gibt und was sie nicht zeigen.
+• Vier Klänge und ein Klang zum Pausenende. Erinnerungen warten bei Telefonaten und kommen ein paar Sekunden danach.
+
+BEWEGUNGSPAUSEN
+• Eine Erinnerung zum Aufstehen und Bewegen nach etwa 45 Minuten (30 bis 120 wählbar), standardmäßig Mo bis Fr von 09:00 bis 18:00. Mit einem Tipp abschaltbar.
+• Liegen eine Augenpause und eine Bewegungspause nah beieinander, bekommst du eine Erinnerung, nie zwei innerhalb von fünf Minuten.
+• Gehen, Dehnen oder gemischt, für 1, 2 oder 5 Minuten.
+• Optional „Bemerken, wenn ich mich bewegt habe“: Der Schrittzähler des Handys überspringt eine Erinnerung, wenn du schon gelaufen bist. Standardmäßig aus; Android fragt erst beim Einschalten nach Körperlicher Aktivität.
+
+AUF EINEN BLICK
+• Schnelleinstellungs-Kachel „Breaks“ und Startbildschirm-Widget mit dem Countdown.
+• Eine Statusbenachrichtigung zeigt, dass das Zählen läuft, und eine Zuverlässigkeits-Prüfliste zeigt, was es stoppen könnte, mit Links zu den Akku-Einstellungen deines Herstellers.
+• Statistik für 7 oder 30 Tage, Stundenbalken und eine Bewegungskarte. Export als CSV-Datei oder Verlauf mit einem Tipp löschen.
+
+OPTIONAL, NUR WENN DU ES EINSCHALTEST
+• Vollbild-Pause (Streng): ein kurzer Countdown über der App, die du gerade nutzt. Braucht „Über anderen Apps einblenden“. Später, Überspringen und Zurück schließen sie immer.
+• Diese Apps nicht zählen: Wähle Apps wie Navigation, die nicht als Bildschirmzeit zählen sollen. Braucht den Nutzungszugriff, den Android als Zugriff auf Informationen zur App-Nutzung beschreibt. Die App prüft nur, welche App vorne ist, und vergleicht sie mit deiner Liste, auf deinem Handy.
+
+DATENSCHUTZ
+Alle Daten bleiben auf deinem Handy. Kein Konto, keine Analyse, kein Tracking, keine Werbung. Die App selbst stellt keine Netzwerkanfragen. Links zu Studien und Hilfeseiten öffnen deinen Browser nur, wenn du sie antippst.
+
+WICHTIG
+Eye Rest & Move ist eine Wohlfühl-Erinnerung, kein Medizinprodukt. Es stellt keine Diagnose und behandelt oder verhindert keine Erkrankung; die Belege für Pausenregeln sind gemischt. Wenn Beschwerden oder Veränderungen deines Sehens anhalten, geh zu einer Augenärztin oder einem Augenarzt; bei anderen Beschwerden zu einer Ärztin oder einem Arzt.
+
+Benötigt Android 7.0 oder neuer. Die App ist auf Englisch.

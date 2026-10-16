@@ -1,0 +1,16 @@
+# Flows share one simulator and one database, so run them sequentially in this order (by flow name).
+flows:
+  - "*"
+executionOrder:
+  continueOnFailure: true
+  flowsOrder:
+    - "Home toggles counting and shows status"
+    - "Break screen counts down, completes, and Skip works"
+    - "Pause menu offers four options and pauses reminders"
+    - "Stats switch 7 and 30 days, export history, delete history"
+    - "Settings persist across restart"
+    - "Reliability checklist shows its rows and sends a test reminder"
+    - "Reminder strength and debug nudge persist"
+    - "Break opened from a notification returns to the previous app"
+    - "Android reminder actions - Done, swipe away = Skip, one nudge"
+    - "iOS reminder ladder with nudges, banner and Done action"

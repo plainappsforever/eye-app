@@ -1,0 +1,30 @@
+appId: ${APP_ID}
+name: iOS "Notice when I've moved" - the simulator has no pedometer, so Settings says so
+# iOS only (MOVE_SPEC M5): Pedometer.isAvailableAsync() is false on the simulator, so Settings shows
+# the unavailable line instead of the switch (no prompt, nothing to turn on). Real step counting:
+# a morning check on an iPhone. Move breaks on is the only precondition (restore-defaults).
+tags:
+  - ios-only
+---
+- runFlow: subflows/launch.yaml
+- runFlow: subflows/restore-defaults.yaml
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: move-detect-unavailable
+    centerElement: true
+    timeout: 45000
+- assertVisible:
+    id: move-detect-unavailable
+    text: "Step counting isn't available on this device."
+- assertNotVisible:
+    id: move-detect-toggle
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen

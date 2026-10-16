@@ -1,0 +1,86 @@
+appId: ${APP_ID}
+name: Reliability checklist shows its rows and sends a test reminder
+tags:
+  - smoke
+---
+- runFlow: subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: rel-status-notifications
+    direction: DOWN
+    centerElement: true
+    timeout: 45000
+- assertVisible:
+    id: rel-status-notifications
+    text: "OK: Allowed"
+
+# Android has four more rows; iOS shows only Notifications.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: rel-row-channel
+          direction: DOWN
+          timeout: 45000
+      - assertVisible:
+          id: rel-row-channel
+      - scrollUntilVisible:
+          element:
+            id: rel-row-battery
+          direction: DOWN
+          timeout: 45000
+      - assertVisible:
+          id: rel-row-battery
+      - scrollUntilVisible:
+          element:
+            id: rel-row-service
+          direction: DOWN
+          timeout: 45000
+      - assertVisible:
+          id: rel-row-service
+      - scrollUntilVisible:
+          element:
+            id: rel-row-last-reminder
+          direction: DOWN
+          timeout: 45000
+      - assertVisible:
+          id: rel-row-last-reminder
+
+- scrollUntilVisible:
+    element:
+      id: send-test-reminder
+    direction: DOWN
+    timeout: 45000
+- tapOn:
+    id: send-test-reminder
+# The status shows for about 7 s; on a loaded Mac the scroll can be slower than that, so its
+# presence is optional — the "Last reminder shown" row below proves the reminder came.
+- scrollUntilVisible:
+    element:
+      id: test-reminder-status
+    direction: DOWN
+    timeout: 5000
+    optional: true
+
+# The status line clears itself once the 5 s test reminder is due and the rows re-check.
+- extendedWaitUntil:
+    notVisible:
+      id: test-reminder-status
+    timeout: 20000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertNotVisible:
+          id: rel-status-last-reminder
+          text: "None yet.*"
+- tapOn:
+    id: nav-back

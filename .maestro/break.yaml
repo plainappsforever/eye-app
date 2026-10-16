@@ -1,0 +1,100 @@
+appId: ${APP_ID}
+name: Break screen counts down, completes, and Skip works
+tags:
+  - smoke
+---
+- runFlow: subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- tapOn:
+    id: debug-set-break-3s
+- assertVisible:
+    id: debug-break-ms
+    text: "breakMs: 3000"
+# G7: absolute precondition = break type Blink; the evidence note opens under "Why this?".
+- scrollUntilVisible:
+    element:
+      id: variant-blink
+    timeout: 45000
+- tapOn:
+    id: variant-blink
+- assertVisible:
+    id: variant-blink
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: variant-why
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: variant-why
+- assertVisible:
+    id: variant-note
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen
+
+- tapOn:
+    id: break-now
+- assertVisible:
+    id: break-screen
+- assertVisible:
+    id: break-countdown
+- assertVisible:
+    id: break-instruction
+    text: "Close your eyes fully, squeeze gently, open. Repeat slowly."
+- extendedWaitUntil:
+    visible:
+      id: break-done
+    timeout: 8000
+- assertVisible:
+    id: home-screen
+
+- tapOn:
+    id: break-now
+- assertVisible:
+    id: break-screen
+- tapOn:
+    id: break-skip
+- assertVisible:
+    id: home-screen
+
+# Back to Look far: its instruction shows.
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: variant-far
+    timeout: 45000
+- tapOn:
+    id: variant-far
+- assertVisible:
+    id: variant-far
+    selected: true
+- tapOn:
+    id: nav-back
+- tapOn:
+    id: break-now
+- assertVisible:
+    id: break-instruction
+    text: "Look at something far away. Blink."
+- tapOn:
+    id: break-skip
+- assertVisible:
+    id: home-screen
+
+# Restore the default break length so the debug value does not leak into later flows/sessions.
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: break-20
+    timeout: 45000
+- tapOn:
+    id: break-20
+- assertVisible:
+    id: break-20
+    selected: true
+- tapOn:
+    id: nav-back

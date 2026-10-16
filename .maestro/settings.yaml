@@ -1,0 +1,128 @@
+appId: ${APP_ID}
+name: Settings persist across restart
+tags:
+  - smoke
+---
+- runFlow: subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- assertVisible:
+    id: settings-screen
+- scrollUntilVisible:
+    element:
+      id: interval-30
+    centerElement: true
+    timeout: 120000
+- tapOn:
+    id: interval-30
+- assertVisible:
+    id: interval-30
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: theme-dark
+    direction: DOWN
+    centerElement: true
+    timeout: 120000
+- tapOn:
+    id: theme-dark
+- assertVisible:
+    id: theme-dark
+    selected: true
+- tapOn:
+    id: nav-back
+
+- runFlow: subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: interval-30
+    centerElement: true
+    timeout: 120000
+- assertVisible:
+    id: interval-30
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: theme-dark
+    direction: DOWN
+    centerElement: true
+    timeout: 120000
+- assertVisible:
+    id: theme-dark
+    selected: true
+
+# Restore the theme, then check the G1 additions (absolute preconditions: this flow sets what it checks).
+- tapOn:
+    id: theme-system
+- scrollUntilVisible:
+    element:
+      id: interval-5
+    direction: UP
+    centerElement: true
+    timeout: 120000
+- waitForAnimationToEnd
+- tapOn:
+    id: interval-5
+- assertVisible:
+    id: interval-5
+    selected: true
+- tapOn:
+    id: interval-20
+- assertVisible:
+    id: interval-20
+    selected: true
+
+- scrollUntilVisible:
+    element:
+      id: sound-chime4
+    direction: DOWN
+    centerElement: true
+    timeout: 120000
+- tapOn:
+    id: sound-chime4
+- assertVisible:
+    id: sound-chime4
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: end-sound-chime3
+    direction: DOWN
+    centerElement: true
+    timeout: 120000
+- tapOn:
+    id: end-sound-chime3
+- assertVisible:
+    id: end-sound-chime3
+    selected: true
+# The reminder sound and the end-of-break sound are separate settings.
+- scrollUntilVisible:
+    element:
+      id: sound-chime4
+    direction: UP
+    centerElement: true
+    timeout: 120000
+- assertVisible:
+    id: sound-chime4
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: sound-chime1
+    direction: UP
+    centerElement: true
+    timeout: 120000
+- tapOn:
+    id: sound-chime1
+- scrollUntilVisible:
+    element:
+      id: end-sound-chime1
+    centerElement: true
+    timeout: 120000
+- tapOn:
+    id: end-sound-chime1
+- assertVisible:
+    id: end-sound-chime1
+    selected: true
+- tapOn:
+    id: nav-back

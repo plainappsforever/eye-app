@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G11 "Next break" widget (EyeWidgetProvider). RemoteViews-safe views only. The countdown and the
+     "counted" line are Chronometers that tick without updates; one of countdown/status and one of
+     counted/hint is visible at a time; the move line ("Move at 14:45", MOVE_SPEC M7) is extra. Colours: the app's dark palette, readable on any wallpaper. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/eyeapp_widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/eyeapp_widget_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingTop="6dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="6dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/eyeapp_widget_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="Next break in"
+            android:textColor="#B0B4BA"
+            android:textSize="12sp" />
+
+        <Chronometer
+            android:id="@+id/eyeapp_widget_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/eyeapp_widget_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <Chronometer
+            android:id="@+id/eyeapp_widget_counted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textColor="#B0B4BA"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/eyeapp_widget_move"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#D0D4DA"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/eyeapp_widget_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textColor="#B0B4BA"
+            android:textSize="12sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/eyeapp_widget_button"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/eyeapp_widget_button_bg"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="Pause 1 h"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="14sp" />
+</LinearLayout>

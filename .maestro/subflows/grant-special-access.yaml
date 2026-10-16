@@ -1,0 +1,30 @@
+appId: ${APP_ID}
+# After "Continue" on a G9/G10 explanation sheet, Android may show its special-access screen: the
+# overlay list ("Display over other apps") or Eye Rest & Move's own usage access page ("App usage data" on
+# API 36). If it does, allow Eye Rest & Move there and come back, like a user would. If the permission was
+# already allowed, the app skips the screen and nothing here runs.
+---
+- runFlow:
+    when:
+      visible: "Display over other apps|Usage access|Apps with usage access|App usage data"
+      notVisible: "Allow display over other apps|Permit usage access|Permit access to app usage data"
+    commands:
+      - scrollUntilVisible:
+          element: "Rest & Move Dev"
+          timeout: 10000
+      - tapOn: "Rest & Move Dev"
+- runFlow:
+    when:
+      visible: "Allow display over other apps|Permit usage access|Permit access to app usage data"
+    commands:
+      - tapOn: "Allow display over other apps|Permit usage access|Permit access to app usage data"
+      - pressKey: back
+- runFlow:
+    when:
+      visible: "Display over other apps|Usage access|Apps with usage access|App usage data"
+    commands:
+      - pressKey: back
+# Settings can stack the page on an older Settings task (e.g. App info): bring Eye Rest & Move back directly.
+- launchApp:
+    appId: ${APP_ID}
+    stopApp: false

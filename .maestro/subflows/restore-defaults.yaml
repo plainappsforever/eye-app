@@ -1,0 +1,163 @@
+appId: ${APP_ID}
+# Puts every debug value the notification flows touch back to its default (CLAUDE.md: debug values
+# must not leak into later flows or a morning test session). Starts and ends on Home.
+---
+# (Retried: a reminder banner on screen can swallow the first tap.)
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+- runFlow:
+    when:
+      visible:
+        id: debug-nudge-ms
+        text: "nudge: 10000"
+    commands:
+      - tapOn:
+          id: debug-nudge-10s
+- assertVisible:
+    id: debug-nudge-ms
+    text: "nudge: strength"
+# Move breaks back to the MOVE_SPEC defaults: on, 45 min, Mon–Fri 09:00–18:00; eye breaks on.
+# (Any other interval: the debug button sets 60 s first, the second tap goes to 45 min.)
+- runFlow:
+    when:
+      notVisible:
+        id: debug-move-ms
+        text: "moveIntervalMs: (60000|2700000)"
+    commands:
+      - tapOn:
+          id: debug-move-60s
+- runFlow:
+    when:
+      visible:
+        id: debug-move-ms
+        text: "moveIntervalMs: 60000"
+    commands:
+      - tapOn:
+          id: debug-move-60s
+- assertVisible:
+    id: debug-move-ms
+    text: "moveIntervalMs: 2700000"
+# Move hours: via "all day" back to exactly Mon–Fri 09:00–18:00, whatever they were.
+- runFlow:
+    when:
+      visible: "Move hours: all day"
+    commands:
+      - tapOn:
+          id: debug-move-all-day
+- tapOn:
+    id: debug-move-all-day
+- assertVisible: "Move hours: all day"
+# Move break debug length off (3 s), then type Walk and length 2 min (MOVE_SPEC M4 defaults).
+- runFlow:
+    when:
+      visible:
+        id: debug-move-break-ms
+        text: "moveBreakMs: 3000"
+    commands:
+      - tapOn:
+          id: debug-move-break-3s
+- assertVisible:
+    id: debug-move-break-ms
+    text: "moveBreakMs: 120000"
+- scrollUntilVisible:
+    element:
+      id: eye-toggle
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Eye breaks: Off"
+    commands:
+      - tapOn:
+          id: eye-toggle
+- assertVisible: "Eye breaks: On"
+- scrollUntilVisible:
+    element:
+      id: interval-20
+    timeout: 45000
+- tapOn:
+    id: interval-20
+- scrollUntilVisible:
+    element:
+      id: break-20
+    timeout: 45000
+- tapOn:
+    id: break-20
+- scrollUntilVisible:
+    element:
+      id: variant-far
+    timeout: 45000
+- tapOn:
+    id: variant-far
+- scrollUntilVisible:
+    element:
+      id: strength-balanced
+    timeout: 45000
+- tapOn:
+    id: strength-balanced
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: natural-break-60
+          timeout: 45000
+      - tapOn:
+          id: natural-break-60
+- scrollUntilVisible:
+    element:
+      id: move-toggle
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Move breaks: Off"
+    commands:
+      - tapOn:
+          id: move-toggle
+- assertVisible: "Move breaks: On"
+- scrollUntilVisible:
+    element:
+      id: move-variant-walk
+    timeout: 45000
+- tapOn:
+    id: move-variant-walk
+- scrollUntilVisible:
+    element:
+      id: move-break-2
+    timeout: 45000
+- tapOn:
+    id: move-break-2
+# "Notice when I've moved" off (MOVE_SPEC default; the iOS simulator shows no switch at all).
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: move-detect-toggle
+          centerElement: true
+          timeout: 45000
+      - runFlow:
+          when:
+            visible: "Notice when I've moved: On"
+          commands:
+            - tapOn:
+                id: move-detect-toggle
+      - assertVisible: "Notice when I've moved: Off"
+- scrollUntilVisible:
+    element:
+      id: snooze-5
+    timeout: 45000
+- tapOn:
+    id: snooze-5
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen

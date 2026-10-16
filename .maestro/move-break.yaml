@@ -1,0 +1,234 @@
+appId: ${APP_ID}
+name: Move break screen (M4) - type, length, Done / Skip, combined, Stand up eye break, Stats
+# Both platforms. Absolute preconditions: restore-defaults, then this flow sets every value it checks
+# (move type Stretch, debug move break 3 s, eye Stand up break 3 s) and starts from an empty history;
+# restore-defaults puts everything back at the end (move type Walk, 2 min, eye Look far, 20 s).
+# The break screen is opened through its link (what a reminder's body tap does): ${SCHEME}://break?kind=...
+---
+- runFlow: subflows/launch.yaml
+- runFlow: subflows/restore-defaults.yaml
+
+# 1. Settings -> Move breaks: type, "Why this?", length.
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 10000
+# Centre the length chips just below the type chips: centring the type chips themselves sometimes let the
+# scroll coast on until they sat under the header, and the tap then missed (v2.1 iOS run).
+- scrollUntilVisible:
+    element:
+      id: move-break-1
+    centerElement: true
+    timeout: 45000
+- waitForAnimationToEnd:
+    timeout: 3000
+# In full runs the scroll still ended with the type chips half under the header (y 97-133 pt, header to ~116 pt), so
+# pull the content down a little before tapping them.
+- swipe:
+    start: 50%, 40%
+    end: 50%, 55%
+    duration: 600
+- waitForAnimationToEnd:
+    timeout: 3000
+- assertVisible:
+    id: move-variant-walk
+    selected: true
+- assertVisible:
+    id: move-variant-instruction
+    text: "Stand up and walk around for a minute or two."
+- tapOn:
+    id: move-variant-stretch
+- assertVisible:
+    id: move-variant-stretch
+    selected: true
+- assertVisible:
+    id: move-variant-instruction
+    text: "Stand up, reach up tall and roll your shoulders slowly."
+- tapOn:
+    id: move-variant-why
+- assertVisible:
+    id: move-variant-note
+    text: "Short breaks from a task reduced fatigue.*"
+- tapOn:
+    id: move-variant-why
+- scrollUntilVisible:
+    element:
+      id: move-break-5
+    centerElement: true
+    timeout: 45000
+- assertVisible:
+    id: move-break-2
+    selected: true
+- tapOn:
+    id: move-break-5
+- assertVisible:
+    id: move-break-5
+    selected: true
+- tapOn:
+    id: move-break-1
+- assertVisible:
+    id: move-break-1
+    selected: true
+- tapOn:
+    id: nav-back
+
+# 2. Empty history, so every count below is absolute.
+- tapOn:
+    id: open-stats
+- extendedWaitUntil:
+    visible:
+      id: stats-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: stats-delete
+    timeout: 45000
+- tapOn:
+    id: stats-delete
+- tapOn: "(?i)delete"
+- scrollUntilVisible:
+    element:
+      id: stats-move-breaks
+    direction: UP
+    timeout: 45000
+- assertVisible:
+    id: stats-move-breaks
+    text: "Moved 0 · Noticed automatically 0 · Skipped 0 · Snoozed 0"
+- tapOn:
+    id: nav-back
+
+# 3. A move break (1 min length): the chosen type's line and a countdown; Skip.
+- openLink: ${SCHEME}://break?kind=move
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible:
+      id: break-instruction
+      text: "Stand up, reach up tall and roll your shoulders slowly."
+    timeout: 15000
+- assertVisible:
+    id: break-countdown
+- tapOn:
+    id: break-skip
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000
+
+# 4. The combined break (eye + move reminder close together): its own line; Skip.
+- openLink: ${SCHEME}://break?kind=both
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible:
+      id: break-instruction
+      text: "Stand up, walk a little and look into the distance."
+    timeout: 15000
+- tapOn:
+    id: break-skip
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000
+
+# 5. The dev-only 3 s length (the chips are what a user sees); Done counts. The combined Done counts both streams.
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 10000
+- tapOn:
+    id: debug-move-break-3s
+- assertVisible:
+    id: debug-move-break-ms
+    text: "moveBreakMs: 3000"
+- tapOn:
+    id: nav-back
+- openLink: ${SCHEME}://break?kind=move
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+# (The link can take a few seconds to open the screen and "Done" shows for only 2 s: wait for the count.)
+- extendedWaitUntil:
+    visible:
+      id: stat-moved
+      text: "Moved: 1"
+    timeout: 40000
+- openLink: ${SCHEME}://break?kind=both
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+# (The link can take a few seconds to open the screen and "Done" shows for only 2 s: wait for the count.)
+- extendedWaitUntil:
+    visible:
+      id: stat-moved
+      text: "Moved: 2"
+    timeout: 40000
+
+# 6. A finished eye "Stand up" break also restarts the move clock and counts as moved (M2.3).
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: variant-stand
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: variant-stand
+- scrollUntilVisible:
+    element:
+      id: debug-set-break-3s
+    direction: UP
+    timeout: 45000
+- tapOn:
+    id: debug-set-break-3s
+- tapOn:
+    id: nav-back
+- tapOn:
+    id: break-now
+- extendedWaitUntil:
+    visible:
+      id: break-done
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000
+- assertVisible:
+    id: stat-moved
+    text: "Moved: 3"
+
+# 7. Stats: the Move block counts them (counts only).
+- tapOn:
+    id: open-stats
+- extendedWaitUntil:
+    visible:
+      id: stats-screen
+    timeout: 10000
+- assertVisible:
+    id: stats-move
+- assertVisible:
+    id: stats-move-breaks
+    text: "Moved 3 · Noticed automatically 0 · Skipped 2 · Snoozed 0"
+- tapOn:
+    id: nav-back
+
+# 8. Put every debug value back.
+- runFlow: subflows/restore-defaults.yaml

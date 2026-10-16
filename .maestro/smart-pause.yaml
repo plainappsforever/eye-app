@@ -1,0 +1,54 @@
+appId: ${APP_ID}
+name: Hold reminders during calls (G5) defaults on, toggles and persists
+tags:
+  - android-only
+---
+- runFlow: subflows/launch.yaml
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: smart-pause-calls-toggle
+    centerElement: true
+    timeout: 45000
+# Absolute precondition: start from On (the default).
+- runFlow:
+    when:
+      visible: "Hold reminders during calls: Off"
+    commands:
+      - tapOn:
+          id: smart-pause-calls-toggle
+- assertVisible: "Hold reminders during calls: On"
+- assertVisible: "During a phone or video call, reminders wait.*"
+- tapOn:
+    id: smart-pause-calls-toggle
+- assertVisible: "Hold reminders during calls: Off"
+
+# Survives a restart.
+- runFlow: subflows/launch.yaml
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: smart-pause-calls-toggle
+    centerElement: true
+    timeout: 45000
+- assertVisible: "Hold reminders during calls: Off"
+# Back to the default.
+- tapOn:
+    id: smart-pause-calls-toggle
+- assertVisible: "Hold reminders during calls: On"

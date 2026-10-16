@@ -1,0 +1,150 @@
+appId: ${APP_ID}
+name: Stats switch 7 and 30 days, export history, delete history
+tags:
+  - smoke
+---
+# Absolute preconditions: 3-second break (restored at the end), then start from an empty history.
+- runFlow: subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- tapOn:
+    id: debug-set-break-3s
+- tapOn:
+    id: nav-back
+- tapOn:
+    id: open-stats
+- assertVisible:
+    id: stats-screen
+- assertVisible:
+    id: stats-summary
+- assertVisible:
+    id: stats-rhythm
+- assertVisible:
+    id: stats-range-7
+    selected: true
+- tapOn:
+    id: stats-range-30
+- assertVisible:
+    id: stats-range-30
+    selected: true
+- assertVisible:
+    id: stats-summary
+- tapOn:
+    id: stats-range-7
+- assertVisible:
+    id: stats-range-7
+    selected: true
+
+# Delete once so the counts below are absolute. Cancel first: nothing changes.
+- scrollUntilVisible:
+    element:
+      id: stats-delete
+    timeout: 45000
+- tapOn:
+    id: stats-delete
+- tapOn: "(?i)cancel"
+- tapOn:
+    id: stats-delete
+- tapOn: "(?i)delete"
+- scrollUntilVisible:
+    element:
+      id: stats-breaks
+    direction: UP
+    timeout: 45000
+- assertVisible:
+    id: stats-breaks
+    text: "Taken 0 · Skipped 0 · Snoozed 0"
+# MOVE_SPEC M6: the Move block is there, counts only, and deleting cleared it.
+- assertVisible:
+    id: stats-move
+- assertVisible:
+    id: stats-move-reminders
+    text: "Move reminders: 0 · Combined with an eye break: 0"
+- assertVisible:
+    id: stats-move-breaks
+    text: "Moved 0 · Noticed automatically 0 · Skipped 0 · Snoozed 0"
+- tapOn:
+    id: nav-back
+
+# One finished break is one "taken".
+- tapOn:
+    id: break-now
+- extendedWaitUntil:
+    visible:
+      id: break-done
+    timeout: 8000
+- assertVisible:
+    id: home-screen
+- tapOn:
+    id: open-stats
+- assertVisible:
+    id: stats-breaks
+    text: "Taken 1 · Skipped 0 · Snoozed 0"
+
+# Export: the file is written (its name is shown) and the share sheet opens.
+- scrollUntilVisible:
+    element:
+      id: stats-export
+    timeout: 45000
+- tapOn:
+    id: stats-export
+# The system share sheet lists the file by name (it covers the status line while open).
+- extendedWaitUntil:
+    visible:
+      text: "rest-and-move-history-.*"
+    timeout: 8000
+# Close the share sheet (Android chooser: back; iOS: swipe it down).
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - pressKey: back
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - swipe:
+          start: "50%,62%"
+          end: "50%,98%"
+          duration: 400
+- assertVisible:
+    id: stats-export-status
+    text: "Saved rest-and-move-history-.*\\.csv"
+
+# Delete with one confirmation: everything back to zero, settings stay.
+- scrollUntilVisible:
+    element:
+      id: stats-delete
+    timeout: 45000
+- tapOn:
+    id: stats-delete
+- assertVisible: "Delete history?"
+- tapOn: "(?i)delete"
+- scrollUntilVisible:
+    element:
+      id: stats-breaks
+    direction: UP
+    timeout: 45000
+- assertVisible:
+    id: stats-breaks
+    text: "Taken 0 · Skipped 0 · Snoozed 0"
+- tapOn:
+    id: nav-back
+
+# Settings survived the delete: the 3-second break is still set. Restore the default.
+- tapOn:
+    id: open-settings
+- assertVisible:
+    id: debug-break-ms
+    text: "breakMs: 3000"
+- scrollUntilVisible:
+    element:
+      id: break-20
+    timeout: 45000
+- tapOn:
+    id: break-20
+- assertVisible:
+    id: break-20
+    selected: true
+- tapOn:
+    id: nav-back

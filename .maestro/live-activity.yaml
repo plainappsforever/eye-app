@@ -1,0 +1,59 @@
+appId: ${APP_ID}
+name: Countdown on Lock Screen (G12) — setting on starts the Live Activity, off ends it
+tags:
+  - ios-only
+# Absolute preconditions: counting on, not paused, 20-minute interval (restore-defaults), setting
+# off at the start. The Live Activity itself is outside the app, so the flow leaves the app once with
+# the setting on (screenshot of the Dynamic Island) and switches it off again at the end.
+---
+- runFlow: subflows/launch.yaml
+- runFlow: subflows/restore-defaults.yaml
+- tapOn:
+    id: toggle-counting
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    id: toggle-counting
+    text: "Turn off"
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: live-activity-toggle
+    centerElement: true
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Countdown on Lock Screen: On"
+    commands:
+      - tapOn:
+          id: live-activity-toggle
+- assertVisible: "Countdown on Lock Screen: Off"
+- tapOn:
+    id: live-activity-toggle
+- assertVisible: "Countdown on Lock Screen: On"
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen
+# In the background the Dynamic Island shows the countdown.
+- pressKey: Home
+- takeScreenshot: live-activity-dynamic-island
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 20000
+# Off again: the default for the next flow and the morning.
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: live-activity-toggle
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: live-activity-toggle
+- assertVisible: "Countdown on Lock Screen: Off"
+- tapOn:
+    id: nav-back

@@ -1,0 +1,82 @@
+appId: ${APP_ID}
+name: iOS reminder ladder with nudges, banner and Done action
+# iOS only (G2/G3/D39). Maestro cannot read iOS banners (they belong to SpringBoard), so the banner
+# part runs on the clock armed by "Turn on" at the end of fast-reminders (reminder +30 s, nudge
+# +40 s) and leaves screenshots as evidence: actions, after-done, nudge-banner.
+tags:
+  - ios-only
+---
+- runFlow: subflows/launch.yaml
+- copyTextFrom:
+    id: stat-taken
+- evalScript: ${output.takenBefore = parseInt(maestro.copiedText.replace(/\D/g, ''), 10)}
+- runFlow: subflows/fast-reminders.yaml
+
+# 1. Long-press the first reminder banner, check its four actions, answer "Done" (second row).
+- extendedWaitUntil:
+    visible: "never-visible-sleep"
+    timeout: 30500
+    optional: true
+- longPressOn:
+    point: 50%, 9%
+- takeScreenshot: actions
+- tapOn:
+    point: 31%, 28%
+# 2. Done re-armed the ladder, so no nudge 10 s later (screenshot after-done shows no banner).
+- extendedWaitUntil:
+    visible: "never-visible-sleep"
+    timeout: 9000
+    optional: true
+- takeScreenshot: after-done
+- copyTextFrom:
+    id: stat-taken
+- assertTrue: ${parseInt(maestro.copiedText.replace(/\D/g, ''), 10) == output.takenBefore + 1}
+
+# 3. The re-armed ladder: 30 reminders + 29 nudges (ends on a reminder) <= 60 pending requests.
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+- tapOn:
+    id: debug-refresh-ladder
+- extendedWaitUntil:
+    visible:
+      id: debug-ladder-count
+      text: "scheduled: 59"
+    timeout: 10000
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen
+
+# 4. The next reminder (~30 s after Done) goes unanswered: its nudge arrives 10 s later.
+- extendedWaitUntil:
+    visible: "never-visible-sleep"
+    timeout: 27000
+    optional: true
+- takeScreenshot: nudge-window
+- extendedWaitUntil:
+    visible: "never-visible-sleep"
+    timeout: 3000
+    optional: true
+- takeScreenshot: nudge-window-2
+
+# Stop the fast ladder, let any banner on screen go (tapping it would open the break), restore defaults.
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn on"
+- extendedWaitUntil:
+    visible: "never-visible-sleep"
+    timeout: 9000
+    optional: true
+- runFlow: subflows/restore-defaults.yaml
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn off"

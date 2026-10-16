@@ -1,0 +1,70 @@
+appId: ${APP_ID}
+# Absolute preconditions for the notification flows (V2_PLAN rule 11): balanced strength, debug
+# interval 30 s (natural break 5 s), debug nudge 10 s, snooze 10 min, eye breaks on, move breaks
+# off (rule 17), counting on. Ends on Home.
+---
+# Counting off while configuring, so a fast reminder's heads-up cannot cover the header buttons.
+- runFlow:
+    when:
+      visible:
+        text: "Turn off"
+    commands:
+      - tapOn:
+          id: toggle-counting
+- assertVisible:
+    text: "Turn on"
+# (Retried: a reminder banner still on screen from before can swallow the first tap.)
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+- tapOn:
+    id: debug-set-interval-30s
+- assertVisible:
+    id: debug-interval-ms
+    text: "intervalMs: 30000"
+- runFlow:
+    when:
+      visible:
+        id: debug-nudge-ms
+        text: "nudge: strength"
+    commands:
+      - tapOn:
+          id: debug-nudge-10s
+- assertVisible:
+    id: debug-nudge-ms
+    text: "nudge: 10000"
+- scrollUntilVisible:
+    element:
+      id: strength-balanced
+    timeout: 45000
+- tapOn:
+    id: strength-balanced
+- assertVisible:
+    id: strength-balanced
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: snooze-10
+    timeout: 45000
+- tapOn:
+    id: snooze-10
+- runFlow: eye-only.yaml
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen
+- runFlow:
+    when:
+      visible:
+        text: "Turn on"
+    commands:
+      - tapOn:
+          id: toggle-counting
+- assertVisible:
+    text: "Turn off"

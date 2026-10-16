@@ -1,0 +1,64 @@
+appId: ${APP_ID}
+name: Screen Time mode (G13) — flag build only; declining Apple's Screen Time prompt keeps the timer
+tags:
+  - ios-only
+  - screen-time-only
+# Runs only against a SCREENTIME=1 build (`SCREENTIME=1 scripts/e2e.sh ios …`, D68). Absolute
+# preconditions: default settings (restore-defaults), Screen Time mode off at the start. The iOS 26.5
+# Simulator shows Apple's real Screen Time prompt; "Allow" then needs the iPhone passcode, which an
+# unattended run must not enter, so this flow takes "Don't Allow": the mode must stay off with a
+# plain explanation, and the timer ladder keeps running. The approved path is an owner check on a
+# real iPhone (V2_LOG P7).
+---
+- runFlow: subflows/launch.yaml
+- runFlow: subflows/restore-defaults.yaml
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: screen-time-toggle
+    centerElement: true
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Screen Time mode: On"
+    commands:
+      - tapOn:
+          id: screen-time-toggle
+- assertVisible: "Screen Time mode: Off"
+- assertVisible:
+    id: screen-time-status
+    text: "Off: reminders follow the timer."
+# G14: the explanation sheet first; "Not now" changes nothing.
+- tapOn:
+    id: screen-time-toggle
+- assertVisible:
+    id: permission-sheet-title
+    text: "Use Screen Time for reminders"
+- assertVisible: "It counts total use since the last reminder; it does not notice short breaks."
+- tapOn:
+    id: permission-sheet-not-now
+- assertVisible: "Screen Time mode: Off"
+# "Continue" asks Apple for Screen Time access, which the Simulator cannot grant.
+- tapOn:
+    id: screen-time-toggle
+- tapOn:
+    id: permission-sheet-continue
+- extendedWaitUntil:
+    visible: ".*Would Like to Access Screen Time"
+    timeout: 15000
+- takeScreenshot: screen-time-apple-prompt
+- tapOn: "Don.t Allow"
+- extendedWaitUntil:
+    visible:
+      id: screen-time-status
+      text: "Screen Time access was not allowed. Reminders follow the timer."
+    timeout: 15000
+- takeScreenshot: screen-time-declined
+- assertVisible: "Screen Time mode: Off"
+- assertNotVisible:
+    id: permission-sheet
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen

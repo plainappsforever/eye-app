@@ -1,0 +1,190 @@
+appId: ${APP_ID}
+name: Full-screen break overlay - Skip, Back, finished, Snooze (Firm only)
+# Android only (G9). Keep the screen on while it runs (adb -s <serial> shell svc power stayon true).
+# Absolute preconditions: counting on, debug interval 30 s, break 20 s, strength Firm, full-screen on.
+tags:
+  - android-only
+---
+- runFlow: subflows/launch.yaml
+# Counting off while configuring, so an overlay cannot cover the settings screen.
+- runFlow:
+    when:
+      visible:
+        text: "Turn off"
+    commands:
+      - tapOn:
+          id: toggle-counting
+- assertVisible:
+    text: "Turn on"
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 5000
+- tapOn:
+    id: debug-set-interval-30s
+- assertVisible:
+    id: debug-interval-ms
+    text: "intervalMs: 30000"
+- scrollUntilVisible:
+    element:
+      id: break-20
+    timeout: 45000
+- tapOn:
+    id: break-20
+- scrollUntilVisible:
+    element:
+      id: variant-far
+    timeout: 45000
+- tapOn:
+    id: variant-far
+# The setting only exists in Firm.
+- scrollUntilVisible:
+    element:
+      id: strength-balanced
+    timeout: 45000
+- tapOn:
+    id: strength-balanced
+- assertNotVisible:
+    id: overlay-toggle
+- tapOn:
+    id: strength-firm
+- scrollUntilVisible:
+    element:
+      id: overlay-toggle
+    centerElement: true
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Full-screen break: On"
+    commands:
+      - tapOn:
+          id: overlay-toggle
+- assertVisible: "Full-screen break: Off"
+# Turning it on shows the explanation first; "Not now" changes nothing.
+- tapOn:
+    id: overlay-toggle
+- assertVisible:
+    id: permission-sheet-title
+    text: "Allow the full-screen break"
+- tapOn:
+    id: permission-sheet-not-now
+- extendedWaitUntil:
+    notVisible:
+      id: permission-sheet
+    timeout: 5000
+- assertVisible: "Full-screen break: Off"
+- tapOn:
+    id: overlay-toggle
+- tapOn:
+    id: permission-sheet-continue
+- runFlow: subflows/grant-special-access.yaml
+- extendedWaitUntil:
+    visible: "Full-screen break: On"
+    timeout: 10000
+- assertNotVisible:
+    id: overlay-needs-permission
+- runFlow: subflows/eye-only.yaml
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen
+- copyTextFrom:
+    id: stat-taken
+- evalScript: ${output.takenBefore = parseInt(maestro.copiedText.replace(/\D/g, ''), 10)}
+- copyTextFrom:
+    id: stat-skipped
+- evalScript: ${output.skippedBefore = parseInt(maestro.copiedText.replace(/\D/g, ''), 10)}
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn off"
+
+# 1. The overlay comes over another app (the launcher) at the 30 s reminder; Skip closes it.
+# (Not over system Settings: Android hides other apps' overlays there, and the engine then posts
+# the reminder notification instead — checked by hand, see V2_LOG P5.)
+- pressKey: home
+- extendedWaitUntil:
+    visible: "Time to look away"
+    timeout: 45000
+- assertVisible: "Look at something far away. Blink."
+- assertVisible: "Snooze .* min"
+- tapOn: "Skip"
+- extendedWaitUntil:
+    notVisible: "Time to look away"
+    timeout: 3000
+
+# 2. Back = Skip.
+- extendedWaitUntil:
+    visible: "Time to look away"
+    timeout: 45000
+- pressKey: back
+- extendedWaitUntil:
+    notVisible: "Time to look away"
+    timeout: 3000
+
+# 3. Left alone, it counts down 20 s and closes itself (a taken break).
+- extendedWaitUntil:
+    visible: "Time to look away"
+    timeout: 45000
+# (Waits return early while the countdown keeps redrawing the screen, so poll until it is gone.)
+- repeat:
+    while:
+      visible: "Time to look away"
+    times: 100
+    commands:
+      - extendedWaitUntil:
+          visible: "no-such-text-pause-2s"
+          timeout: 2000
+          optional: true
+- assertNotVisible: "Time to look away"
+
+# 4. Snooze pauses reminders. (Polled like step 3: right after that loop a plain wait returned at once.)
+- repeat:
+    while:
+      notVisible: "Time to look away"
+    times: 100
+    commands:
+      - extendedWaitUntil:
+          visible: "no-such-text-pause-2s"
+          timeout: 2000
+          optional: true
+- assertVisible: "Time to look away"
+- tapOn: "Snooze .* min"
+- extendedWaitUntil:
+    notVisible: "Time to look away"
+    timeout: 3000
+
+- runFlow: subflows/launch.yaml
+- assertVisible: "Paused until.*"
+- copyTextFrom:
+    id: stat-taken
+- assertTrue: ${parseInt(maestro.copiedText.replace(/\D/g, ''), 10) == output.takenBefore + 1}
+- copyTextFrom:
+    id: stat-skipped
+- assertTrue: ${parseInt(maestro.copiedText.replace(/\D/g, ''), 10) == output.skippedBefore + 3}
+
+# Back to defaults: full-screen off, then the shared reset (balanced, 20 min, …).
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: overlay-toggle
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: overlay-toggle
+- assertVisible: "Full-screen break: Off"
+- tapOn:
+    id: nav-back
+- runFlow: subflows/restore-defaults.yaml
+# Clear the snooze: Turn off, Turn on (turning on drops a stale pause).
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn on"
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn off"

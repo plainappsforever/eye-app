@@ -1,0 +1,100 @@
+appId: ${APP_ID}
+name: Android move reminder - I moved, swipe away = Skip, snooze label
+# Android only (MOVE_SPEC M3): drives the real notification shade. Keep the screen on while it runs
+# (adb -s <serial> shell svc power stayon true). Eye breaks off here (V2_PLAN rule 17).
+tags:
+  - android-only
+---
+- pressKey: back
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- scrollUntilVisible:
+    element:
+      text: "Clear all"
+    timeout: 5000
+    optional: true
+- tapOn:
+    text: "Clear all"
+    optional: true
+- pressKey: back
+- runFlow: subflows/launch.yaml
+- runFlow:
+    file: subflows/move-fast.yaml
+    env:
+      EYE: "off"
+- assertVisible:
+    id: status-label
+    text: "Eye breaks off"
+- assertVisible:
+    id: move-line
+    text: "Next move break .*"
+- copyTextFrom:
+    id: stat-moved
+- evalScript: ${output.movedBefore = parseInt(maestro.copiedText.replace(/\D/g, ''), 10)}
+- tapOn:
+    id: open-settings
+- copyTextFrom:
+    id: debug-move-stats
+- evalScript: ${output.skippedBefore = parseInt(maestro.copiedText.match(/skipped (\d+)/)[1], 10)}
+- tapOn:
+    id: nav-back
+
+# 1. "Time to move" about 60 s after the stretch started: three actions, "I moved" answers it.
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- extendedWaitUntil:
+    visible: "Time to move"
+    timeout: 80000
+- assertVisible: "I moved"
+- assertVisible: "Snooze 10 min"
+- assertVisible: "Skip"
+- assertNotVisible: "Time to look away"
+- tapOn: "I moved"
+- extendedWaitUntil:
+    notVisible: "Time to move"
+    timeout: 5000
+
+# 2. The next one (60 s after "I moved") swiped away = Skip.
+- extendedWaitUntil:
+    visible: "Time to move"
+    timeout: 80000
+- swipe:
+    start: 8%, 31%
+    end: 98%, 31%
+    duration: 250
+- extendedWaitUntil:
+    notVisible: "Time to move"
+    timeout: 5000
+
+- pressKey: back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000
+# Stop the fast move reminders before checking (a heads-up could cover the buttons).
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn on"
+- copyTextFrom:
+    id: stat-moved
+- assertTrue: ${parseInt(maestro.copiedText.replace(/\D/g, ''), 10) == output.movedBefore + 1}
+- tapOn:
+    id: open-settings
+- copyTextFrom:
+    id: debug-move-stats
+- assertTrue: ${parseInt(maestro.copiedText.match(/skipped (\d+)/)[1], 10) == output.skippedBefore + 1}
+- tapOn:
+    id: nav-back
+- runFlow: subflows/restore-defaults.yaml
+- runFlow:
+    when:
+      visible:
+        text: "Turn on"
+    commands:
+      - tapOn:
+          id: toggle-counting
+- assertVisible:
+    text: "Turn off"

@@ -1,0 +1,48 @@
+appId: ${APP_ID}
+name: Reminder strength and debug nudge persist
+tags:
+  - smoke
+---
+- runFlow: subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: strength-balanced
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: strength-firm
+- assertVisible:
+    id: strength-firm
+    selected: true
+- assertVisible:
+    id: strength-description
+    text: ".*1 min later.*"
+- tapOn:
+    id: strength-gentle
+- assertVisible:
+    id: strength-description
+    text: "A quiet notification.*"
+
+# Survives a restart.
+- runFlow: subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: strength-balanced
+    centerElement: true
+    timeout: 45000
+- assertVisible:
+    id: strength-gentle
+    selected: true
+- tapOn:
+    id: strength-balanced
+- assertVisible:
+    id: strength-description
+    text: ".*3 min later.*"
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen

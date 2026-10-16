@@ -1,0 +1,160 @@
+appId: ${APP_ID}
+name: Move breaks settings - toggles, interval, Move hours persist across relaunch
+# Both platforms (MOVE_SPEC M1/M7). Absolute preconditions: sets every value it checks and puts
+# the MOVE_SPEC defaults back at the end (move on, 45 min, Mon–Fri 09:00–18:00, eye on).
+---
+- runFlow: subflows/launch.yaml
+- runFlow: subflows/restore-defaults.yaml
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: move-toggle
+    centerElement: true
+    timeout: 45000
+- assertVisible: "Move breaks: On"
+- assertVisible:
+    id: move-interval-45
+    selected: true
+- assertVisible:
+    id: move-hours-range-label
+    text: "9:00 AM – 6:00 PM"
+- assertVisible:
+    id: move-weekday-1
+    selected: true
+- assertVisible:
+    id: move-weekday-6
+    selected: false
+# Change interval, add Saturday, end 30 min later.
+- tapOn:
+    id: move-interval-60
+- tapOn:
+    id: move-weekday-6
+- tapOn:
+    id: move-hours-end-plus
+- assertVisible:
+    id: move-hours-range-label
+    text: "9:00 AM – 6:30 PM"
+- scrollUntilVisible:
+    element:
+      id: eye-toggle
+    direction: UP
+    timeout: 45000
+- tapOn:
+    id: eye-toggle
+- assertVisible: "Eye breaks: Off"
+
+# Relaunch: everything is still there, and Home shows the move line without the eye countdown.
+- runFlow: subflows/launch.yaml
+- runFlow:
+    when:
+      visible:
+        text: "Turn on"
+    commands:
+      - tapOn:
+          id: toggle-counting
+- assertVisible:
+    id: status-label
+    text: "Eye breaks off"
+- assertNotVisible:
+    id: countdown-label
+- assertVisible:
+    id: move-line
+    text: "(Next move break|Move breaks start|Move break due).*"
+- assertVisible:
+    id: stat-moved
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 5000
+# (The dev Debug section is long: scroll down to the Eye breaks switch.)
+- scrollUntilVisible:
+    element:
+      id: eye-toggle
+    timeout: 45000
+- assertVisible: "Eye breaks: Off"
+- tapOn:
+    id: eye-toggle
+- assertVisible: "Eye breaks: On"
+- scrollUntilVisible:
+    element:
+      id: move-toggle
+    centerElement: true
+    timeout: 45000
+- assertVisible:
+    id: move-interval-60
+    selected: true
+- assertVisible:
+    id: move-weekday-6
+    selected: true
+- assertVisible:
+    id: move-hours-range-label
+    text: "9:00 AM – 6:30 PM"
+# Move breaks off: no move line, no Moved count, the interval chips are hidden.
+# (Idempotent retry: on a loaded Mac one iOS tap here did not register.)
+- retry:
+    maxRetries: 2
+    commands:
+      - runFlow:
+          when:
+            visible: "Move breaks: On"
+          commands:
+            - tapOn:
+                id: move-toggle
+      - extendedWaitUntil:
+          visible: "Move breaks: Off"
+          timeout: 5000
+- assertNotVisible:
+    id: move-interval-45
+- tapOn:
+    id: nav-back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000
+- assertNotVisible:
+    id: move-line
+- assertNotVisible:
+    id: stat-moved
+- assertVisible:
+    id: countdown-label
+
+# Back to the defaults.
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: move-toggle
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: move-toggle
+- assertVisible: "Move breaks: On"
+- tapOn:
+    id: move-interval-45
+- tapOn:
+    id: move-weekday-6
+- tapOn:
+    id: move-hours-end-minus
+- assertVisible:
+    id: move-hours-range-label
+    text: "9:00 AM – 6:00 PM"
+- assertVisible:
+    id: move-weekday-6
+    selected: false
+- tapOn:
+    id: nav-back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000

@@ -1,0 +1,61 @@
+appId: ${APP_ID}
+name: Break opened from a notification returns to the previous app
+# Android only (G4): from inside system Settings, the break screen opens, finishes, and the user
+# lands back in Settings (checked by hand too: `dumpsys activity activities | grep ResumedActivity`).
+tags:
+  - android-only
+---
+- runFlow: subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- tapOn:
+    id: debug-set-break-3s
+- assertVisible:
+    id: debug-break-ms
+    text: "breakMs: 3000"
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen
+# Be in another app (system Settings) when the "notification" opens the break.
+- launchApp:
+    appId: com.android.settings
+- extendedWaitUntil:
+    visible: "Network & internet"
+    timeout: 10000
+- openLink: eyeapp-dev://break?from=notification
+- extendedWaitUntil:
+    visible:
+      id: break-done
+    timeout: 10000
+- extendedWaitUntil:
+    notVisible:
+      id: break-done
+    timeout: 8000
+- assertNotVisible:
+    id: home-screen
+- assertNotVisible:
+    id: break-screen
+# Back in the app the user was in.
+- assertVisible: "Network & internet"
+# Restore the default break length. (launchApp right after moveTaskToBack occasionally leaves
+# Settings in front on the emulator — P3 saw it once in a full run — so retry.)
+- retry:
+    maxRetries: 2
+    commands:
+      - launchApp:
+          appId: ${APP_ID}
+      - extendedWaitUntil:
+          visible:
+            id: home-screen
+          timeout: 20000
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: break-20
+    timeout: 45000
+- tapOn:
+    id: break-20
+- tapOn:
+    id: nav-back

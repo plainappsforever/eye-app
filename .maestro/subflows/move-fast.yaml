@@ -1,0 +1,109 @@
+appId: ${APP_ID}
+# Absolute preconditions for the move flows (V2_PLAN rules 11/17): move breaks on with the debug
+# 60 s interval and all-day Move hours, snooze 10 min, balanced strength; eye breaks ON only when
+# the flow sets EYE=on (the combined flow), otherwise OFF so no eye reminder covers the screen.
+# Counting is turned off and on again at the end: a fresh sitting stretch from now. Ends on Home.
+---
+- runFlow:
+    when:
+      visible:
+        text: "Turn off"
+    commands:
+      - tapOn:
+          id: toggle-counting
+- assertVisible:
+    text: "Turn on"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: open-settings
+      - extendedWaitUntil:
+          visible:
+            id: settings-screen
+          timeout: 5000
+- runFlow:
+    when:
+      visible:
+        id: debug-move-ms
+        text: "moveIntervalMs: 2700000"
+    commands:
+      - tapOn:
+          id: debug-move-60s
+- runFlow:
+    when:
+      notVisible:
+        id: debug-move-ms
+        text: "moveIntervalMs: 60000"
+    commands:
+      - tapOn:
+          id: debug-move-60s
+- assertVisible:
+    id: debug-move-ms
+    text: "moveIntervalMs: 60000"
+- runFlow:
+    when:
+      visible: "Move hours: all day"
+    commands:
+      - tapOn:
+          id: debug-move-all-day
+- assertVisible: "Move hours: weekdays 9–18"
+- scrollUntilVisible:
+    element:
+      id: eye-toggle
+    timeout: 45000
+- runFlow:
+    when:
+      true: ${EYE == 'on'}
+    commands:
+      - runFlow:
+          when:
+            visible: "Eye breaks: Off"
+          commands:
+            - tapOn:
+                id: eye-toggle
+      - assertVisible: "Eye breaks: On"
+- runFlow:
+    when:
+      true: ${EYE != 'on'}
+    commands:
+      - runFlow:
+          when:
+            visible: "Eye breaks: On"
+          commands:
+            - tapOn:
+                id: eye-toggle
+      - assertVisible: "Eye breaks: Off"
+- scrollUntilVisible:
+    element:
+      id: strength-balanced
+    timeout: 45000
+- tapOn:
+    id: strength-balanced
+- scrollUntilVisible:
+    element:
+      id: move-toggle
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Move breaks: Off"
+    commands:
+      - tapOn:
+          id: move-toggle
+- assertVisible: "Move breaks: On"
+- scrollUntilVisible:
+    element:
+      id: snooze-10
+    timeout: 45000
+- tapOn:
+    id: snooze-10
+- tapOn:
+    id: nav-back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn off"

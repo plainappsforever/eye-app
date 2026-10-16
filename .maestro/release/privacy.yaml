@@ -1,0 +1,28 @@
+appId: ${APP_ID}
+name: Release build - Settings > About > Privacy policy opens the offline text
+# RELEASE_KIT 1c row 12 (v2.1): no network needed; the web page is a placeholder.
+---
+- runFlow: ../subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: open-privacy
+    timeout: 60000
+    centerElement: true
+- tapOn:
+    id: open-privacy
+- extendedWaitUntil:
+    visible:
+      id: privacy-screen
+    timeout: 10000
+- assertVisible: "In short"
+- assertVisible: ".*does not collect, transmit or share personal data.*"
+- scrollUntilVisible:
+    element:
+      id: privacy-web-link
+    timeout: 30000
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: settings-screen

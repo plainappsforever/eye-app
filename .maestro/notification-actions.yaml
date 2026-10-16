@@ -1,0 +1,86 @@
+appId: ${APP_ID}
+name: Android reminder actions - Done, swipe away = Skip, one nudge
+# Android only (G2/G3): drives the real notification shade. Keep the screen on while it runs
+# (adb -s <serial> shell svc power stayon true).
+tags:
+  - android-only
+---
+# Start from an empty shade so an old reminder (or a system notification on top, which keeps
+# ours collapsed with its buttons hidden) cannot be matched instead of the fresh one. The first
+# Back closes a shade a previous run may have left open.
+- pressKey: back
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- scrollUntilVisible:
+    element:
+      text: "Clear all"
+    timeout: 5000
+    optional: true
+- tapOn:
+    text: "Clear all"
+    optional: true
+- pressKey: back
+- runFlow: subflows/launch.yaml
+- runFlow: subflows/fast-reminders.yaml
+- copyTextFrom:
+    id: stat-taken
+- evalScript: ${output.takenBefore = parseInt(maestro.copiedText.replace(/\D/g, ''), 10)}
+- copyTextFrom:
+    id: stat-skipped
+- evalScript: ${output.skippedBefore = parseInt(maestro.copiedText.replace(/\D/g, ''), 10)}
+
+# Open the notification shade and wait for the reminder (debug interval 30 s).
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- extendedWaitUntil:
+    visible: "Time to look away"
+    timeout: 45000
+- assertVisible: "Snooze 10 min"
+- assertVisible: "Start break"
+
+# 1. "Done" answers it in the shade: no app launch, and no nudge 10 s later.
+- tapOn: "Done"
+- assertNotVisible: "Time to look away"
+- extendedWaitUntil:
+    visible: "Still looking.*"
+    timeout: 15000
+    optional: true
+- assertNotVisible: "Still looking.*"
+
+# 2. Swiping the next reminder away = Skip.
+- extendedWaitUntil:
+    visible: "Time to look away"
+    timeout: 30000
+# (The shade was cleared, so ours is the top card; a full-width fling dismisses it.)
+- swipe:
+    start: 8%, 31%
+    end: 98%, 31%
+    duration: 250
+- extendedWaitUntil:
+    notVisible: "Time to look away"
+    timeout: 5000
+- assertNotVisible: "Still looking.*"
+
+# 3. An unanswered reminder gets exactly one nudge ~10 s later (same notification, new text).
+# (Wait for the nudge directly: the next reminder comes ~30 s after the skipped one, its nudge 10 s later.)
+- extendedWaitUntil:
+    visible: "Still looking.*"
+    timeout: 50000
+- assertVisible: "Time for a short look into the distance."
+- assertNotVisible: "Time to look away"
+- tapOn: "Done"
+
+- pressKey: back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000
+- runFlow: subflows/restore-defaults.yaml
+- copyTextFrom:
+    id: stat-taken
+- assertTrue: ${parseInt(maestro.copiedText.replace(/\D/g, ''), 10) == output.takenBefore + 2}
+- copyTextFrom:
+    id: stat-skipped
+- assertTrue: ${parseInt(maestro.copiedText.replace(/\D/g, ''), 10) == output.skippedBefore + 1}

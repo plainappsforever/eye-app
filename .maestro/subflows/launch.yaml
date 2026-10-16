@@ -1,0 +1,38 @@
+appId: ${APP_ID}
+---
+# A notification shade left open by an earlier (failed) flow covers the app: close it first.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - pressKey: back
+# Retried once: on the loaded emulator the relaunched app has ended up behind the launcher
+# (seen in P7 and P7b full runs, never alone) — a second launch brings it to the front.
+- retry:
+    maxRetries: 1
+    commands:
+      - launchApp:
+          stopApp: true
+          permissions:
+            notifications: allow
+      # iOS dev client: a stale "Open in "Rest & Move Preview"?" system dialog from Expo CLI's post-install
+      # deep-link helper can sit over the app (CLAUDE.md gotchas); dismiss it.
+      - runFlow:
+          when:
+            visible: "Open in .*"
+          commands:
+            - tapOn: "Cancel"
+      # A fresh database starts on /onboarding; skip through it once, then every later launch lands on Home.
+      - runFlow:
+          when:
+            visible:
+              id: onboarding-screen
+          commands:
+            - tapOn:
+                id: onboarding-next
+            - tapOn:
+                id: onboarding-finish
+      - extendedWaitUntil:
+          visible:
+            id: home-screen
+          timeout: 60000

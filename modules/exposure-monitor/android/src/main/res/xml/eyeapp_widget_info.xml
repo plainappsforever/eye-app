@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G11 / D40: updatePeriodMillis 0 — the exposure service pushes an update on every state change
+     and the Chronometers tick on their own. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:description="@string/eyeapp_widget_description"
+    android:initialLayout="@layout/eyeapp_widget"
+    android:previewLayout="@layout/eyeapp_widget"
+    android:minWidth="180dp"
+    android:minHeight="50dp"
+    android:minResizeWidth="180dp"
+    android:minResizeHeight="50dp"
+    android:resizeMode="horizontal"
+    android:targetCellWidth="3"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    tools:targetApi="31" />

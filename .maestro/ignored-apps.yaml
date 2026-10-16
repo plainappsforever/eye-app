@@ -1,0 +1,161 @@
+appId: ${APP_ID}
+name: Don't count chosen apps - explanation, Usage Access, picker, status while ignored (G10)
+# Android only. Absolute preconditions: counting on, feature off at the start, "Settings" unticked.
+tags:
+  - android-only
+---
+- runFlow: subflows/launch.yaml
+- runFlow:
+    when:
+      visible:
+        text: "Turn on"
+    commands:
+      - tapOn:
+          id: toggle-counting
+- assertVisible:
+    text: "Turn off"
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: ignore-apps-toggle
+    centerElement: true
+    timeout: 45000
+- runFlow:
+    when:
+      visible: "Don't count these apps: On"
+    commands:
+      - tapOn:
+          id: ignore-apps-toggle
+- assertVisible: "Don't count these apps: Off"
+
+# The explanation comes first; "Not now" changes nothing.
+- tapOn:
+    id: ignore-apps-toggle
+- assertVisible:
+    id: permission-sheet-title
+    text: "Don't count chosen apps"
+- assertVisible: ".*Eye Rest & Move only checks which app is in front.*"
+- tapOn:
+    id: permission-sheet-not-now
+- extendedWaitUntil:
+    notVisible:
+      id: permission-sheet
+    timeout: 5000
+- assertVisible: "Don't count these apps: Off"
+- tapOn:
+    id: ignore-apps-toggle
+- tapOn:
+    id: permission-sheet-continue
+- runFlow: subflows/grant-special-access.yaml
+- extendedWaitUntil:
+    visible: "Don't count these apps: On"
+    timeout: 10000
+- assertNotVisible:
+    id: usage-needs-permission
+
+# Picker: navigation apps are ticked (the first time; later runs leave Maps ticked), search works.
+- tapOn:
+    id: choose-ignored-apps
+- extendedWaitUntil:
+    visible:
+      id: ignored-apps-screen
+    timeout: 5000
+- tapOn:
+    id: ignored-apps-search
+- inputText: "Maps"
+- extendedWaitUntil:
+    visible:
+      id: app-com.google.android.apps.maps-state
+      text: "Not counted"
+    timeout: 10000
+- assertVisible: "Navigation · com.google.android.apps.maps"
+- eraseText: 10
+- inputText: "Settings"
+- hideKeyboard
+- runFlow:
+    when:
+      visible:
+        id: app-com.android.settings-state
+        text: "Not counted"
+    commands:
+      - tapOn:
+          id: app-com.android.settings
+- tapOn:
+    id: app-com.android.settings
+- assertVisible:
+    id: app-com.android.settings-state
+    text: "Not counted"
+- assertNotVisible:
+    id: app-com.google.android.apps.maps
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: ignored-apps-summary
+    text: ".*Settings.*"
+- tapOn:
+    id: nav-back
+- assertVisible:
+    id: home-screen
+
+# While system Settings is in front, counting stops and the status notification says so.
+- launchApp:
+    appId: com.android.settings
+# (On a loaded Mac the shade swipe can land before Settings has drawn and miss: wait, and retry.)
+- extendedWaitUntil:
+    visible: "Network & internet"
+    timeout: 15000
+- retry:
+    maxRetries: 2
+    commands:
+      - swipe:
+          start: 50%, 1%
+          end: 50%, 75%
+      - extendedWaitUntil:
+          visible: "Not counting — Settings is open"
+          timeout: 15000
+- pressKey: back
+
+# Back in Eye Rest & Move (not ignored): counting again.
+- runFlow: subflows/launch.yaml
+- extendedWaitUntil:
+    visible:
+      id: status-label
+      text: "Watching"
+    timeout: 10000
+
+# Clean up: untick Settings, feature off.
+- tapOn:
+    id: open-settings
+- scrollUntilVisible:
+    element:
+      id: choose-ignored-apps
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: choose-ignored-apps
+- tapOn:
+    id: ignored-apps-search
+- inputText: "Settings"
+- hideKeyboard
+- tapOn:
+    id: app-com.android.settings
+- assertVisible:
+    id: app-com.android.settings-state
+    text: "Counted"
+- tapOn:
+    id: nav-back
+- scrollUntilVisible:
+    element:
+      id: ignore-apps-toggle
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: ignore-apps-toggle
+- assertVisible: "Don't count these apps: Off"
+- tapOn:
+    id: nav-back

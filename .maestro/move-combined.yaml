@@ -1,0 +1,104 @@
+appId: ${APP_ID}
+name: Android combined reminder - eye 30 s + move 60 s give one "stand up and look away"
+# Android only (MOVE_SPEC M2): the eye reminder at 30 s pulls the move reminder due 30 s later
+# along -> exactly one combined notification; Done counts a taken break and a move. Screen kept on.
+tags:
+  - android-only
+---
+- pressKey: back
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- scrollUntilVisible:
+    element:
+      text: "Clear all"
+    timeout: 5000
+    optional: true
+- tapOn:
+    text: "Clear all"
+    optional: true
+- pressKey: back
+- runFlow: subflows/launch.yaml
+- runFlow:
+    file: subflows/move-fast.yaml
+    env:
+      EYE: "on"
+# Eye interval 30 s (debug), nudge = strength (balanced 3 min: no nudge within this flow).
+- tapOn:
+    id: toggle-counting
+- tapOn:
+    id: open-settings
+- tapOn:
+    id: debug-set-interval-30s
+- assertVisible:
+    id: debug-interval-ms
+    text: "intervalMs: 30000"
+- runFlow:
+    when:
+      visible:
+        id: debug-nudge-ms
+        text: "nudge: 10000"
+    commands:
+      - tapOn:
+          id: debug-nudge-10s
+- copyTextFrom:
+    id: debug-move-stats
+- evalScript: ${output.combinedBefore = parseInt(maestro.copiedText.match(/combined (\d+)/)[1], 10)}
+- tapOn:
+    id: nav-back
+- copyTextFrom:
+    id: stat-taken
+- evalScript: ${output.takenBefore = parseInt(maestro.copiedText.replace(/\D/g, ''), 10)}
+- copyTextFrom:
+    id: stat-moved
+- evalScript: ${output.movedBefore = parseInt(maestro.copiedText.replace(/\D/g, ''), 10)}
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn off"
+
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- extendedWaitUntil:
+    visible: "Time to stand up and look away"
+    timeout: 50000
+- assertVisible: "Stand up, walk a little and look into the distance."
+- assertNotVisible: "Time to move"
+- assertNotVisible: "Time to look away"
+- tapOn: "Done"
+- extendedWaitUntil:
+    notVisible: "Time to stand up and look away"
+    timeout: 5000
+- pressKey: back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000
+- tapOn:
+    id: toggle-counting
+- assertVisible:
+    text: "Turn on"
+- copyTextFrom:
+    id: stat-taken
+- assertTrue: ${parseInt(maestro.copiedText.replace(/\D/g, ''), 10) == output.takenBefore + 1}
+- copyTextFrom:
+    id: stat-moved
+- assertTrue: ${parseInt(maestro.copiedText.replace(/\D/g, ''), 10) == output.movedBefore + 1}
+- tapOn:
+    id: open-settings
+- copyTextFrom:
+    id: debug-move-stats
+- assertTrue: ${parseInt(maestro.copiedText.match(/combined (\d+)/)[1], 10) == output.combinedBefore + 1}
+- tapOn:
+    id: nav-back
+- runFlow: subflows/restore-defaults.yaml
+- runFlow:
+    when:
+      visible:
+        text: "Turn on"
+    commands:
+      - tapOn:
+          id: toggle-counting
+- assertVisible:
+    text: "Turn off"

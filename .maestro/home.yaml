@@ -1,0 +1,28 @@
+appId: ${APP_ID}
+name: Home toggles counting and shows status
+tags:
+  - smoke
+---
+- runFlow: subflows/launch.yaml
+- assertVisible:
+    id: status-label
+
+# One "Pause…" menu (G7); the menu itself is covered in pause.yaml.
+- tapOn:
+    id: pause-menu-open
+- tapOn:
+    id: pause-1h
+- assertVisible:
+    id: status-label
+
+# Toggling off then on clears any pause too; leave counting on for later flows/runs.
+- tapOn:
+    id: toggle-counting
+- tapOn:
+    id: toggle-counting
+
+# At the largest system font size the Today card is below the fold: scroll to it.
+- scrollUntilVisible:
+    element:
+      id: stat-taken
+    timeout: 45000
