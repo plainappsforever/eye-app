@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 /** A selectable preset chip (Settings: interval, sounds, weekdays, …). */
@@ -23,7 +23,7 @@ export function Chip({ label, selected, testID, onPress }: { label: string; sele
 const styles = StyleSheet.create({
   chip: {
     minHeight: 36,
-    borderRadius: 9,
+    borderRadius: Radius.control,
     paddingHorizontal: Spacing.two,
     alignItems: 'center',
     justifyContent: 'center',

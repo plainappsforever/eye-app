@@ -2,6 +2,7 @@
   "name": "eye-app",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "license": "GPL-3.0-only",
   "dependencies": {
     "@expo/ui": "~57.0.24",
     "expo": "~57.0.25",
@@ -23,6 +24,7 @@
     "expo-splash-screen": "~57.0.10",
     "expo-sqlite": "~57.0.4",
     "expo-status-bar": "~57.0.1",
+    "expo-store-review": "~57.0.3",
     "expo-symbols": "~57.0.3",
     "expo-system-ui": "~57.0.4",
     "expo-web-browser": "~57.0.3",
@@ -53,6 +55,7 @@
     "dev": "expo start --dev-client --port 8091",
     "ios": "scripts/native.sh ios",
     "android": "scripts/native.sh android",
+    "licenses": "node scripts/licenses.js",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
     "test": "jest",

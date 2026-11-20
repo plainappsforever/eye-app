@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+name: Store screenshots C - Settings scrolled to the break type with its "Why this?" note open
+# Run against the production Release build. Not part of the normal suite.
+---
+# Let the running move break finish on its own (counts as Moved).
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 90000
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: variant-why
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: variant-why
+- assertVisible:
+    id: variant-note

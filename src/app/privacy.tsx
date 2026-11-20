@@ -45,7 +45,7 @@ export default function PrivacyScreen() {
         accessibilityRole="link"
         accessibilityLabel="Open the privacy policy web page"
         onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
-        <ThemedText type="link" themeColor="tint">
+        <ThemedText type="link" themeColor="tintText">
           The same text on the web: {PRIVACY_POLICY_URL}
         </ThemedText>
       </Pressable>

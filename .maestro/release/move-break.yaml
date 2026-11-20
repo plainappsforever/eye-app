@@ -144,7 +144,7 @@ name: Release build - Move break screen (type, length, Done / Skip, combined, St
 - extendedWaitUntil:
     visible:
       id: stat-moved
-      text: "Moved: 1"
+      text: "1\s+Moved"
     timeout: 120000
 - waitForAnimationToEnd:
     timeout: 4000
@@ -161,7 +161,7 @@ name: Release build - Move break screen (type, length, Done / Skip, combined, St
 - extendedWaitUntil:
     visible:
       id: stat-moved
-      text: "Moved: 2"
+      text: "2\s+Moved"
     timeout: 120000
 
 # A finished eye "Stand up" break also counts as moved.
@@ -195,7 +195,7 @@ name: Release build - Move break screen (type, length, Done / Skip, combined, St
     timeout: 15000
 - assertVisible:
     id: stat-moved
-    text: "Moved: 3"
+    text: "3\s+Moved"
 
 # Stats: the Move block counts them (counts only).
 - tapOn:

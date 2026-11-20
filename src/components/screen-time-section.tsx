@@ -5,7 +5,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { Button } from '@/components/button';
 import { PermissionSheet } from '@/components/permission-sheet';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import type { ExposureSettingsRecord } from '@/db/exposure-settings';
 import { useTheme } from '@/hooks/use-theme';
 import * as IosEngine from '@/lib/ios-engine';
@@ -163,5 +163,5 @@ export function ScreenTimeSection({
 
 const styles = StyleSheet.create({
   anchor: { width: 1, height: 1, position: 'absolute' },
-  toggleRow: { minHeight: 44, borderRadius: 12, paddingHorizontal: Spacing.three, justifyContent: 'center' },
+  toggleRow: { minHeight: 44, borderRadius: Radius.control, paddingHorizontal: Spacing.three, justifyContent: 'center' },
 });

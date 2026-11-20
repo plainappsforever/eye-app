@@ -163,7 +163,7 @@ name: Move break screen (M4) - type, length, Done / Skip, combined, Stand up eye
 - extendedWaitUntil:
     visible:
       id: stat-moved
-      text: "Moved: 1"
+      text: "1\s+Moved"
     timeout: 40000
 - openLink: ${SCHEME}://break?kind=both
 - runFlow:
@@ -175,7 +175,7 @@ name: Move break screen (M4) - type, length, Done / Skip, combined, Stand up eye
 - extendedWaitUntil:
     visible:
       id: stat-moved
-      text: "Moved: 2"
+      text: "2\s+Moved"
     timeout: 40000
 
 # 6. A finished eye "Stand up" break also restarts the move clock and counts as moved (M2.3).
@@ -213,7 +213,7 @@ name: Move break screen (M4) - type, length, Done / Skip, combined, Stand up eye
     timeout: 15000
 - assertVisible:
     id: stat-moved
-    text: "Moved: 3"
+    text: "3\s+Moved"
 
 # 7. Stats: the Move block counts them (counts only).
 - tapOn:

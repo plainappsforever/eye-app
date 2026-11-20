@@ -62,7 +62,7 @@ export function HoursEditor({
         <ThemedText testID={`${rangeId}-range-label`}>
           {allDayLabel && value.startMinute === value.endMinute
             ? 'All day'
-            : `${formatMinuteOfDay(value.startMinute)} – ${formatMinuteOfDay(value.endMinute)}`}
+            : `${formatMinuteOfDay(value.startMinute)} to ${formatMinuteOfDay(value.endMinute)}`}
         </ThemedText>
         <Pressable testID={`${rangeId}-start-plus`} accessibilityRole="button" accessibilityLabel="Start time 30 minutes later" hitSlop={8} onPress={() => shift('startMinute', 30)}>
           <ThemedText type="smallBold">+</ThemedText>

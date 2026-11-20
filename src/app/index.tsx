@@ -1,12 +1,13 @@
 import { Link, Redirect, Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import { Button } from '@/components/button';
 import { PauseMenu } from '@/components/pause-menu';
+import { SkyWindow } from '@/components/sky-window';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { BrandFonts, Spacing } from '@/constants/theme';
 import { getExposureSettings, type ExposureSettingsRecord } from '@/db/exposure-settings';
 import { getOnboardingComplete } from '@/db/settings';
 import { getStatsForDate } from '@/db/stats';
@@ -14,12 +15,14 @@ import { dateKey } from '@/lib/dates';
 import { ExposureModule, type NativeExposureState } from '@/lib/exposure-module';
 import { drainAndroidOutbox } from '@/lib/exposure-sync';
 import { formatClockTime, formatCountdown } from '@/lib/format';
+import { maybeAskForReview } from '@/lib/rating';
 import { pauseDurationMs, type PauseOption } from '@/lib/pause';
 import { formatDuration } from '@/lib/stats';
 import * as IosEngine from '@/lib/ios-engine';
 import { getNextMoveFireAt, getScheduledSummary, hasNotificationPermission } from '@/lib/notifications';
 import { androidStatusLabel } from '@/lib/status-label';
 import { moveHomeLine } from '@/lib/move';
+import { skyFill } from '@/lib/sky';
 import { useTheme } from '@/hooks/use-theme';
 
 type Today = { taken: number; skipped: number; snoozed: number; longestStretchMs: number; screenMs: number; moved: number };
@@ -32,6 +35,9 @@ type ViewModel = {
   moveLabel: string | null;
   /** Move breaks are on (shows the "Moved" count). */
   moveOn: boolean;
+  /** 0..1 fill of the eye window and of the small move window. */
+  eyeFill: number;
+  moveFill: number;
   isOn: boolean;
   isPaused: boolean;
   today: Today;
@@ -58,16 +64,34 @@ function androidViewModel(state: NativeExposureState, today: Today, settings: Ex
       formatClockTime
     ),
     moveOn: settings.moveEnabled,
+    eyeFill: eyeOn && isOn && !isPaused ? skyFill(state.msUntilBreak, settings.intervalMs) : 0,
+    moveFill: isOn && !isPaused && state.moveDueAt ? skyFill(state.moveDueAt - Date.now(), settings.moveIntervalMs) : 0,
     isOn,
     isPaused,
     today,
   };
 }
 
+/** One "Today" number in the numerals font over a small label. The id sits on one Text, so flows can read it. */
+function Readout({ testID, value, label }: { testID: string; value: number | string; label: string }) {
+  const theme = useTheme();
+  return (
+    <View style={styles.readout}>
+      <Text testID={testID} style={styles.readoutText}>
+        <Text style={[styles.readoutValue, { color: theme.text }]}>{value}</Text>
+        {'\n'}
+        <Text style={[styles.readoutLabel, { color: theme.textSecondary }]}>{label}</Text>
+      </Text>
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const db = useSQLiteContext();
   const theme = useTheme();
   const router = useRouter();
+  const { width: screenWidth } = useWindowDimensions();
+  const windowWidth = Math.min(Math.round(screenWidth * 0.72), 320);
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const [notificationsAllowed, setNotificationsAllowed] = useState(true);
   const [pauseMenuVisible, setPauseMenuVisible] = useState(false);
@@ -77,6 +101,8 @@ export default function HomeScreen() {
     countdownLabel: null,
     moveLabel: null,
     moveOn: false,
+    eyeFill: 0,
+    moveFill: 0,
     isOn: true,
     isPaused: false,
     today: EMPTY_TODAY,
@@ -110,6 +136,8 @@ export default function HomeScreen() {
       countdownLabel: settings.eyeEnabled && isOn && !isPaused && nextReminderAt ? `Next: ${formatClockTime(nextReminderAt)}` : null,
       moveLabel: moveHomeLine({ running, settings: IosEngine.moveSettingsOf(settings), dueAt: moveDueAt, lastMovedAt, now: Date.now() }, formatClockTime),
       moveOn: settings.moveEnabled,
+      eyeFill: settings.eyeEnabled && isOn && !isPaused && nextReminderAt ? skyFill(nextReminderAt - Date.now(), settings.intervalMs) : 0,
+      moveFill: moveDueAt ? skyFill(moveDueAt - Date.now(), settings.moveIntervalMs) : 0,
       isOn,
       isPaused,
       today: {
@@ -151,7 +179,12 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      getOnboardingComplete(db).then((done) => active && setOnboarded(done));
+      getOnboardingComplete(db).then((done) => {
+        if (!active) return;
+        setOnboarded(done);
+        // Rating prompt: home is in front again after real use (tenth completed break); never in dev builds, so flows are not blocked.
+        if (done && !__DEV__) maybeAskForReview(db).catch(() => {});
+      });
       // A poll can land while the database is closing (app reload); that is not worth an error.
       const poll = () => refresh().catch(() => {});
       poll();
@@ -212,14 +245,14 @@ export default function HomeScreen() {
             <View style={styles.headerLinks}>
               <Link href="/stats" asChild>
                 <Pressable testID="open-stats" accessibilityLabel="Stats" hitSlop={8}>
-                  <ThemedText themeColor="tint" maxFontSizeMultiplier={1.3}>
+                  <ThemedText themeColor="tintText" maxFontSizeMultiplier={1.3}>
                     Stats
                   </ThemedText>
                 </Pressable>
               </Link>
               <Link href="/settings" asChild>
                 <Pressable testID="open-settings" accessibilityLabel="Settings" hitSlop={8}>
-                  <ThemedText themeColor="tint" maxFontSizeMultiplier={1.3}>
+                  <ThemedText themeColor="tintText" maxFontSizeMultiplier={1.3}>
                     Settings
                   </ThemedText>
                 </Pressable>
@@ -230,22 +263,26 @@ export default function HomeScreen() {
       />
       <ScrollView testID="home-screen" style={{ backgroundColor: theme.background }} contentContainerStyle={styles.content}>
         <View style={styles.statusBlock}>
-          <ThemedText testID="status-label" type="subtitle" style={styles.center}>
+          <ThemedText testID="status-label" style={[styles.center, styles.status]}>
             {vm.statusLabel || ' '}
           </ThemedText>
+          <SkyWindow fill={vm.eyeFill} width={windowWidth} testID="break-now" label="Break now" onPress={breakNow} />
           {vm.countdownLabel ? (
-            <ThemedText testID="countdown-label" type="title" style={styles.center}>
+            <ThemedText testID="countdown-label" type="title" numeric style={styles.center}>
               {vm.countdownLabel}
             </ThemedText>
           ) : null}
           {vm.moveLabel ? (
-            <ThemedText testID="move-line" style={styles.center}>
-              {vm.moveLabel}
-            </ThemedText>
+            <View style={styles.moveRow}>
+              <SkyWindow fill={vm.moveFill} width={Math.round(windowWidth * 0.36)} corner={12} frame={3} />
+              <ThemedText testID="move-line" style={styles.moveText}>
+                {vm.moveLabel}
+              </ThemedText>
+            </View>
           ) : null}
           {!notificationsAllowed ? (
             <ThemedText themeColor="danger" style={styles.center}>
-              Notifications are off — reminders will not appear.
+              Notifications are off. Reminders will not appear.
             </ThemedText>
           ) : null}
         </View>
@@ -257,8 +294,8 @@ export default function HomeScreen() {
             variant={vm.isOn ? 'secondary' : 'primary'}
             disabled={!vm.ready}
             onPress={toggleCounting}
+            style={styles.pill}
           />
-          <Button testID="break-now" label="Break now" variant="secondary" disabled={!vm.ready} onPress={breakNow} />
           <Button
             testID="pause-menu-open"
             label="Pause…"
@@ -266,21 +303,21 @@ export default function HomeScreen() {
             accessibilityLabel="Pause reminders"
             disabled={!vm.ready}
             onPress={() => setPauseMenuVisible(true)}
+            style={styles.pill}
           />
         </View>
 
-        <View style={[styles.today, { backgroundColor: theme.backgroundElement }]}>
-          <ThemedText type="smallBold">Today</ThemedText>
-          <ThemedText testID="stat-taken">Breaks taken: {vm.today.taken}</ThemedText>
-          <ThemedText testID="stat-skipped">Skipped / snoozed: {vm.today.skipped + vm.today.snoozed}</ThemedText>
-          {vm.moveOn ? <ThemedText testID="stat-moved">Moved: {vm.today.moved}</ThemedText> : null}
-          {Platform.OS === 'android' ? (
-            <ThemedText testID="stat-screen-time">Screen time: {formatDuration(vm.today.screenMs)}</ThemedText>
-          ) : null}
-          {Platform.OS === 'android' ? (
-            <ThemedText testID="stat-longest-stretch">Longest stretch: {formatCountdown(vm.today.longestStretchMs)}</ThemedText>
-          ) : null}
+        <View style={styles.readouts}>
+          <Readout testID="stat-taken" value={vm.today.taken} label="Breaks taken" />
+          <Readout testID="stat-skipped" value={vm.today.skipped + vm.today.snoozed} label="Skipped" />
+          {vm.moveOn ? <Readout testID="stat-moved" value={vm.today.moved} label="Moved" /> : null}
         </View>
+        {Platform.OS === 'android' ? (
+          <View style={styles.readouts}>
+            <Readout testID="stat-screen-time" value={formatDuration(vm.today.screenMs)} label="Screen time" />
+            <Readout testID="stat-longest-stretch" value={formatCountdown(vm.today.longestStretchMs)} label="Longest stretch" />
+          </View>
+        ) : null}
         {Platform.OS === 'ios' ? (
           <ThemedText testID="ios-note" type="small" themeColor="textSecondary" style={styles.center}>
             iPhone can&apos;t tell when you look away. Tap Done on a reminder, or it may follow up once.
@@ -296,25 +333,58 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: Spacing.four,
-    gap: Spacing.five,
+    gap: Spacing.four,
   },
   headerLinks: {
     flexDirection: 'row',
     gap: Spacing.three,
   },
   statusBlock: {
-    marginTop: Spacing.five,
-    gap: Spacing.two,
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  status: {
+    fontSize: 15,
   },
   center: {
     textAlign: 'center',
   },
+  moveRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  moveText: {
+    flexShrink: 1,
+  },
   actions: {
+    flexDirection: 'row',
     gap: Spacing.two,
   },
-  today: {
-    borderRadius: 12,
-    padding: Spacing.three,
-    gap: Spacing.one,
+  pill: {
+    flex: 1,
+    borderRadius: 999,
+  },
+  readouts: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  readout: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  readoutText: {
+    textAlign: 'center',
+  },
+  readoutValue: {
+    fontFamily: BrandFonts.numerals,
+    fontVariant: ['tabular-nums'],
+    fontSize: 22,
+    lineHeight: 28,
+  },
+  readoutLabel: {
+    fontFamily: BrandFonts.body,
+    fontSize: 11,
+    lineHeight: 14,
   },
 });

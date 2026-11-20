@@ -8,7 +8,9 @@ import { Alert, FlatList, Platform, Pressable, StyleSheet, View } from 'react-na
 
 import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Card } from '@/components/card';
+import { SkyWindow } from '@/components/sky-window';
+import { Radius, Spacing } from '@/constants/theme';
 import { listEventsBetween } from '@/db/events';
 import { getExposureSettings } from '@/db/exposure-settings';
 import { deleteHistory, getAllStats, getRecentStats, type DailyStats } from '@/db/stats';
@@ -81,7 +83,7 @@ function RhythmChart({ values }: { values: number[] }) {
       ? `Most ${unit} around ${String(peak).padStart(2, '0')}:00, about ${max < 10 ? max.toFixed(1) : Math.round(max)} per day.`
       : `No ${unit} recorded yet.`;
   return (
-    <View testID="stats-rhythm" style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+    <Card testID="stats-rhythm" style={styles.card}>
       <ThemedText type="smallBold">Rhythm by hour</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {isAndroid ? 'Average screen minutes in each hour of the day' : 'Average reminders answered in each hour of the day'}
@@ -89,7 +91,7 @@ function RhythmChart({ values }: { values: number[] }) {
       <View style={styles.bars} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
         {values.map((value, hour) => (
           <View key={hour} testID={`rhythm-bar-${hour}`} style={styles.barSlot}>
-            <View style={[styles.bar, { height: max > 0 ? Math.max(2, (value / max) * 64) : 2, backgroundColor: theme.tint }]} />
+            <View style={[styles.bar, { height: max > 0 ? Math.max(2, (value / max) * 64) : 2, backgroundColor: theme.tintText }]} />
           </View>
         ))}
       </View>
@@ -104,14 +106,13 @@ function RhythmChart({ values }: { values: number[] }) {
       <ThemedText testID="stats-rhythm-summary" type="small" themeColor="textSecondary">
         {summary}
       </ThemedText>
-    </View>
+    </Card>
   );
 }
 
 function SummaryCard({ summary, intervalMin }: { summary: Summary; intervalMin: number }) {
-  const theme = useTheme();
   return (
-    <View testID="stats-summary" style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+    <Card testID="stats-summary" style={styles.card}>
       {isAndroid ? (
         <>
           <ThemedText testID="stats-screen-time">Screen time counted: {formatDuration(summary.screenMs)}</ThemedText>
@@ -128,16 +129,15 @@ function SummaryCard({ summary, intervalMin }: { summary: Summary; intervalMin: 
       <ThemedText testID="stats-breaks">
         Taken {summary.taken} · Skipped {summary.skipped} · Snoozed {summary.snoozed}
       </ThemedText>
-    </View>
+    </Card>
   );
 }
 
 /** MOVE_SPEC M6: move-break counts for the range — counts only, no percentage, goal or streak. */
 function MoveCard({ summary }: { summary: Summary }) {
-  const theme = useTheme();
   const m = summary.move;
   return (
-    <View testID="stats-move" style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+    <Card testID="stats-move" style={styles.card}>
       <ThemedText type="smallBold" accessibilityRole="header">
         Move breaks
       </ThemedText>
@@ -147,7 +147,7 @@ function MoveCard({ summary }: { summary: Summary }) {
       <ThemedText testID="stats-move-breaks">
         Moved {m.moveDone} · Noticed automatically {m.moveNoticed} · Skipped {m.moveSkipped} · Snoozed {m.moveSnoozed}
       </ThemedText>
-    </View>
+    </Card>
   );
 }
 
@@ -221,6 +221,14 @@ export default function StatsScreen() {
           {data ? <SummaryCard summary={data.summary} intervalMin={data.intervalMin} /> : null}
           {data ? <MoveCard summary={data.summary} /> : null}
           {data ? <RhythmChart values={data.rhythm} /> : null}
+          {data && data.rows.every((r) => r.taken + r.skipped + r.snoozed === 0) ? (
+            <View testID="stats-empty" style={styles.empty}>
+              <SkyWindow fill={0} empty width={96} corner={16} frame={4} />
+              <ThemedText type="small" themeColor="textSecondary" style={{ textAlign: 'center' }}>
+                No breaks counted yet. The first one shows up after your first reminder.
+              </ThemedText>
+            </View>
+          ) : null}
           <ThemedText type="smallBold" accessibilityRole="header">
             Day by day
           </ThemedText>
@@ -243,7 +251,7 @@ export default function StatsScreen() {
         </View>
       }
       renderItem={({ item }) => (
-        <View testID={`stats-row-${item.date}`} style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
+        <Card testID={`stats-row-${item.date}`} style={styles.row}>
           <ThemedText type="smallBold">{weekdayLabel(item.date)}</ThemedText>
           <ThemedText>
             Taken {item.taken} · Skipped {item.skipped} · Snoozed {item.snoozed}
@@ -258,7 +266,7 @@ export default function StatsScreen() {
               Screen time {formatDuration(item.screenMs)} · Longest stretch {formatCountdown(item.longestStretchMs)}
             </ThemedText>
           ) : null}
-        </View>
+        </Card>
       )}
     />
   );
@@ -279,13 +287,12 @@ const styles = StyleSheet.create({
   },
   rangeChip: {
     minHeight: 40,
-    borderRadius: 9,
+    borderRadius: Radius.control,
     paddingHorizontal: Spacing.three,
     alignItems: 'center',
     justifyContent: 'center',
   },
   card: {
-    borderRadius: 12,
     padding: Spacing.three,
     gap: Spacing.one,
   },
@@ -309,9 +316,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   row: {
-    borderRadius: 12,
     padding: Spacing.three,
     gap: Spacing.half,
+  },
+  empty: {
+    alignItems: 'center',
+    gap: Spacing.three,
+    paddingVertical: Spacing.three,
   },
   footer: {
     marginTop: Spacing.three,

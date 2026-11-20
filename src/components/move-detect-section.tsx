@@ -6,7 +6,7 @@ import { AppState, Linking, PermissionsAndroid, Platform, Pressable, StyleSheet 
 import { Button } from '@/components/button';
 import { PermissionSheet } from '@/components/permission-sheet';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { ExposureModule } from '@/lib/exposure-module';
 import { loadPedometer } from '@/lib/ios-pedometer';
@@ -181,7 +181,7 @@ export function MoveDetectSection({ enabled, onChange }: { enabled: boolean; onC
 const styles = StyleSheet.create({
   toggleRow: {
     minHeight: 44,
-    borderRadius: 12,
+    borderRadius: Radius.control,
     paddingHorizontal: Spacing.three,
     justifyContent: 'center',
   },

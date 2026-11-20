@@ -1,0 +1,31 @@
+{
+  "_doc": "The app's identity (D24). Every app replaces these placeholder values with its sheet in tasks-and-reports/DESIGN_IDENTITIES.md. Field guide: docs/DESIGN_TOKENS.md. Read by src/constants/theme.ts (screens) and app.config.ts (splash, Android icon background).",
+  "light": {
+    "accent": "#3A7293",
+    "onAccent": "#FFFFFF",
+    "accentText": "#3A7293",
+    "background": "#EDF1F4",
+    "surface": "#FFFFFF",
+    "border": "#D5D9DC"
+  },
+  "dark": {
+    "accent": "#86C3E3",
+    "onAccent": "#16181A",
+    "accentText": "#86C3E3",
+    "background": "#1A2025",
+    "surface": "#2A3034",
+    "border": "#3C4146"
+  },
+  "fonts": {
+    "title": "sans",
+    "body": "sans",
+    "numerals": "mono"
+  },
+  "radius": {
+    "control": 12,
+    "card": 12
+  },
+  "card": "outlined",
+  "density": "airy",
+  "settingsLayout": "B"
+}

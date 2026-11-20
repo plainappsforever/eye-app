@@ -14,7 +14,7 @@ import { ReliabilityChecklist } from '@/components/reliability-checklist';
 import { ScreenTimeSection } from '@/components/screen-time-section';
 import { ThemedText } from '@/components/themed-text';
 import { CHIME_SOURCES, SOUND_OPTIONS } from '@/constants/chimes';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { getExposureSettings, setExposureSettings, type ExposureSettingsRecord } from '@/db/exposure-settings';
 import { BREAK_VARIANTS, VARIANT_INFO } from '@/lib/break-variants';
 import { DEFAULT_MOVE_HOURS, DEFAULT_MOVE_INTERVAL_MS, MOVE_INTERVAL_PRESETS_MIN } from '@/lib/move';
@@ -450,7 +450,7 @@ export default function SettingsScreen() {
           accessibilityState={{ expanded: whyVisible }}
           onPress={() => setWhyVisible((visible) => !visible)}
           hitSlop={8}>
-          <ThemedText type="link" themeColor="tint">
+          <ThemedText type="link" themeColor="tintText">
             {whyVisible ? 'Hide' : 'Why this?'}
           </ThemedText>
         </Pressable>
@@ -461,7 +461,7 @@ export default function SettingsScreen() {
             </ThemedText>
             {VARIANT_INFO[settings.breakVariant].links.map((link) => (
               <Pressable key={link.url} accessibilityRole="link" accessibilityLabel={link.label} onPress={() => Linking.openURL(link.url)}>
-                <ThemedText type="link" themeColor="tint">
+                <ThemedText type="link" themeColor="tintText">
                   {link.label}
                 </ThemedText>
               </Pressable>
@@ -612,7 +612,7 @@ export default function SettingsScreen() {
               accessibilityState={{ expanded: moveWhyVisible }}
               onPress={() => setMoveWhyVisible((visible) => !visible)}
               hitSlop={8}>
-              <ThemedText type="link" themeColor="tint">
+              <ThemedText type="link" themeColor="tintText">
                 {moveWhyVisible ? 'Hide' : 'Why this?'}
               </ThemedText>
             </Pressable>
@@ -623,7 +623,7 @@ export default function SettingsScreen() {
                 </ThemedText>
                 {MOVE_VARIANT_INFO[settings.moveVariant].links.map((link) => (
                   <Pressable key={link.url} accessibilityRole="link" accessibilityLabel={link.label} onPress={() => Linking.openURL(link.url)}>
-                    <ThemedText type="link" themeColor="tint">
+                    <ThemedText type="link" themeColor="tintText">
                       {link.label}
                     </ThemedText>
                   </Pressable>
@@ -850,18 +850,23 @@ export default function SettingsScreen() {
           browser only when you tap one.
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.evidenceHeading}>
-          Evidence (mixed — the 20-20-20 rule is a widely recommended default, not a guarantee):
+          Evidence (mixed: the 20-20-20 rule is a widely recommended default, not a guarantee):
         </ThemedText>
         {EVIDENCE_LINKS.map((link) => (
           <Pressable key={link.url} accessibilityRole="link" accessibilityLabel={link.label} onPress={() => Linking.openURL(link.url)}>
-            <ThemedText type="link" themeColor="tint">
+            <ThemedText type="link" themeColor="tintText">
               {link.label}
             </ThemedText>
           </Pressable>
         ))}
         <Pressable testID="open-privacy" accessibilityRole="link" accessibilityLabel="Privacy policy" onPress={() => router.push('/privacy')}>
-          <ThemedText type="link" themeColor="tint" style={styles.evidenceHeading}>
+          <ThemedText type="link" themeColor="tintText" style={styles.evidenceHeading}>
             Privacy policy
+          </ThemedText>
+        </Pressable>
+        <Pressable testID="open-licenses" accessibilityRole="link" accessibilityLabel="Open-source licences" onPress={() => router.push('/licenses')}>
+          <ThemedText type="link" themeColor="tintText" style={styles.evidenceHeading}>
+            Open-source licences
           </ThemedText>
         </Pressable>
         <ThemedText testID="about-disclaimer" type="small" themeColor="textSecondary" style={styles.evidenceHeading}>
@@ -893,7 +898,7 @@ const styles = StyleSheet.create({
   },
   toggleRow: {
     minHeight: 44,
-    borderRadius: 12,
+    borderRadius: Radius.control,
     paddingHorizontal: Spacing.three,
     justifyContent: 'center',
   },
@@ -901,7 +906,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   note: {
-    borderRadius: 12,
+    borderRadius: Radius.control,
     padding: Spacing.three,
     gap: Spacing.two,
   },

@@ -1,10 +1,11 @@
 import * as Notifications from 'expo-notifications';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, type Theme } from 'expo-router';
 import { openDatabaseAsync, SQLiteProvider, useSQLiteContext, type SQLiteDatabase } from 'expo-sqlite';
 import { useEffect } from 'react';
 import { AppState, Platform, Pressable, useColorScheme } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { BrandFonts, Colors } from '@/constants/theme';
 import { migrate } from '@/db/migrations';
 import { getThemePreference } from '@/db/settings';
 import { drainAndroidOutbox, syncAndroidSettings } from '@/lib/exposure-sync';
@@ -137,10 +138,28 @@ function BackButton() {
   const router = useRouter();
   return (
     <Pressable testID="nav-back" accessibilityLabel="Back" hitSlop={8} onPress={() => router.back()}>
-      <ThemedText themeColor="tint">Back</ThemedText>
+      <ThemedText themeColor="tintText">Back</ThemedText>
     </Pressable>
   );
 }
+
+// D24: header, back button and screen backgrounds follow the brand tokens instead of React Navigation's iOS blue.
+function navigationTheme(dark: boolean): Theme {
+  const base = dark ? DarkTheme : DefaultTheme;
+  const c = Colors[dark ? 'dark' : 'light'];
+  const font = (f: Theme['fonts']['regular']) => ({ ...f, fontFamily: BrandFonts.body });
+  return {
+    ...base,
+    colors: { ...base.colors, primary: c.tintText, background: c.background, card: c.background, text: c.text, border: c.border },
+    fonts: {
+      regular: font(base.fonts.regular),
+      medium: font(base.fonts.medium),
+      bold: font(base.fonts.bold),
+      heavy: font(base.fonts.heavy),
+    },
+  };
+}
+const NAV_THEMES = { light: navigationTheme(false), dark: navigationTheme(true) };
 
 function Navigator() {
   const scheme = useColorScheme();
@@ -148,7 +167,7 @@ function Navigator() {
   useBreakFromNotification();
 
   return (
-    <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={NAV_THEMES[scheme === 'dark' ? 'dark' : 'light']}>
       <Stack>
         <Stack.Screen name="index" options={{ title: 'Eye Rest & Move' }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
@@ -157,6 +176,7 @@ function Navigator() {
         <Stack.Screen name="stats" options={{ title: 'Stats', headerLeft: BackButton }} />
         <Stack.Screen name="ignored-apps" options={{ title: "Don't count these apps", headerLeft: BackButton }} />
         <Stack.Screen name="privacy" options={{ title: 'Privacy policy', headerLeft: BackButton }} />
+        <Stack.Screen name="licenses" options={{ title: 'Open-source licences', headerLeft: BackButton }} />
       </Stack>
     </ThemeProvider>
   );

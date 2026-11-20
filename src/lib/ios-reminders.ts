@@ -25,7 +25,7 @@ export const REMINDER_TITLE = 'Time to look away';
 export const NUDGE_TITLE = 'Still looking at the screen?';
 export const NUDGE_BODY = 'Time for a short look into the distance.';
 export const LAST_RUNG_BODY = 'Open Eye Rest & Move to keep reminders going.';
-export const PAUSE_RESUME_BODY = 'Reminders are back on — open to re-arm.';
+export const PAUSE_RESUME_BODY = 'Reminders are back on. Open to re-arm.';
 
 /**
  * The eye reminder's body (v2.1 S10, D87). The iPhone timer cannot see screen use, so it says

@@ -50,10 +50,4 @@ modules/*/android/.cxx/
 
 # Local artifacts (Maestro screenshots, logs)
 artifacts/
-keystore.properties
-*.keystore
-google-services.json
-GoogleService-Info.plist
-.env
-.env.*
-test/fixtures/real/
+__pycache__/

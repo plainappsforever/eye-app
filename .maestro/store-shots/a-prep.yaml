@@ -1,0 +1,58 @@
+appId: ${APP_ID}
+name: Store screenshots A - first launch, real breaks so Home and Stats hold honest numbers
+# Run against the production Release build (no Debug section). Not part of the normal suite.
+---
+- runFlow: ../subflows/launch.yaml
+- tapOn:
+    id: open-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: break-20
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: break-20
+- scrollUntilVisible:
+    element:
+      id: move-break-1
+    centerElement: true
+    timeout: 45000
+- tapOn:
+    id: move-break-1
+- tapOn:
+    id: nav-back
+# One real 20 s eye break, finished with Done.
+- tapOn:
+    id: break-now
+- extendedWaitUntil:
+    visible:
+      id: break-done
+    timeout: 40000
+- waitForAnimationToEnd:
+    timeout: 4000
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000
+# One real 1 min move break (opened through its link, as a reminder tap does).
+- openLink: ${SCHEME}://break?kind=move
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible:
+      id: stat-moved
+      text: "1\s+Moved"
+    timeout: 120000
+- waitForAnimationToEnd:
+    timeout: 4000
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 15000

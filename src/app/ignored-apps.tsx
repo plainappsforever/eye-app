@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { getExposureSettings, setExposureSettings } from '@/db/exposure-settings';
 import { useTheme } from '@/hooks/use-theme';
 import { ExposureModule, type LaunchableApp } from '@/lib/exposure-module';
@@ -106,14 +106,14 @@ const styles = StyleSheet.create({
   search: {
     margin: Spacing.three,
     minHeight: 44,
-    borderRadius: 12,
+    borderRadius: Radius.control,
     paddingHorizontal: Spacing.three,
     fontSize: 16,
   },
   list: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.one },
   row: {
     minHeight: 56,
-    borderRadius: 12,
+    borderRadius: Radius.control,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     flexDirection: 'row',

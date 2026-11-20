@@ -1,0 +1,16 @@
+appId: ${APP_ID}
+name: Store screenshots D - Stats screen from Settings
+# Run against the production Release build. Not part of the normal suite.
+---
+- tapOn:
+    id: nav-back
+- extendedWaitUntil:
+    visible:
+      id: home-screen
+    timeout: 10000
+- tapOn:
+    id: open-stats
+- extendedWaitUntil:
+    visible:
+      id: stats-screen
+    timeout: 10000

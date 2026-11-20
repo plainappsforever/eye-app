@@ -64,7 +64,7 @@ export default function OnboardingScreen() {
           <ThemedText style={styles.body}>
             Eye Rest & Move needs permission to show break reminders.
             {Platform.OS === 'android'
-              ? ' You will also see a quiet "Eye Rest & Move is on" notification while it is counting — it can be minimized and never makes a sound.'
+              ? ' You will also see a quiet "Eye Rest & Move is on" notification while it is counting. It can be minimized and never makes a sound.'
               : ''}
           </ThemedText>
           <Button testID="onboarding-finish" label="Allow notifications" onPress={finish} />

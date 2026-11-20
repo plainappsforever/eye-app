@@ -1,0 +1,3 @@
+Chime sounds (assets/sounds/chime1.wav to chime4.wav)
+
+These short chimes are the app's own work. They are synthesised by the script scripts/gen-chimes.mjs in this repository (sine-wave tones), not taken from any third-party recording or sample library. They are released together with the app under the GNU General Public License v3 (see the LICENSE file).

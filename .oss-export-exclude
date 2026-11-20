@@ -1,0 +1,2 @@
+# .oss-export-exclude - paths left out of the public export (one per line)
+scripts/asc-submit.py   # App Store Connect script: embeds the App Review contact (a person's details), never public

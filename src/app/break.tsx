@@ -3,9 +3,10 @@ import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, ScrollView, StyleSheet } from 'react-native';
+import { Platform, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 
 import { Button } from '@/components/button';
+import { SkyWindow } from '@/components/sky-window';
 import { ThemedText } from '@/components/themed-text';
 import { CHIME_SOURCES } from '@/constants/chimes';
 import { Spacing } from '@/constants/theme';
@@ -30,6 +31,8 @@ export default function BreakScreen() {
   const db = useSQLiteContext();
   const theme = useTheme();
   const router = useRouter();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const [totalMs, setTotalMs] = useState<number | null>(null);
   const { from, kind: kindParam } = useLocalSearchParams<{ from?: string; kind?: string }>();
   const openedExternally = typeof from === 'string' && EXTERNAL_SOURCES.includes(from);
   // MOVE_SPEC M3/M4: a move reminder opens `break?kind=move`, a combined one `kind=both`. Both count
@@ -56,6 +59,7 @@ export default function BreakScreen() {
       setSound(settings.endSound);
       setVibrationEnabled(settings.vibrationEnabled);
       if (kind !== 'eye') {
+        setTotalMs(settings.moveBreakMs);
         setRemainingMs(settings.moveBreakMs);
         if (kind === 'both') {
           setInstruction(COMBINED_BODY);
@@ -69,6 +73,7 @@ export default function BreakScreen() {
         }
         return;
       }
+      setTotalMs(settings.breakMs);
       setRemainingMs(settings.breakMs);
       setInstruction(instructionFor(settings.breakVariant, settings.mixIndex));
       // A finished Stand up break also restarts the move clock (MOVE_SPEC M2.3).
@@ -139,6 +144,10 @@ export default function BreakScreen() {
     return () => clearTimeout(timer);
   }, [remainingMs, done, finish, callGate]);
 
+  // The window of the home screen, full height: the sky fills as the break runs down.
+  const windowWidth = Math.min(Math.round(screenWidth * 0.6), Math.round(screenHeight * 0.32), 260);
+  const progress = totalMs && remainingMs !== null ? 1 - remainingMs / totalMs : 0;
+
   if (callGate === 'onCall') {
     return (
       <ScrollView
@@ -146,7 +155,7 @@ export default function BreakScreen() {
         style={{ backgroundColor: theme.background }}
         contentContainerStyle={styles.container}>
         <ThemedText type="subtitle" style={styles.instruction}>
-          You&apos;re on a call — break later?
+          You&apos;re on a call. Break later?
         </ThemedText>
         <Button testID="break-call-later" label="Later" onPress={leave} />
         <Button testID="break-call-start" label="Start the break" variant="secondary" onPress={() => setCallGate('open')} />
@@ -162,7 +171,8 @@ export default function BreakScreen() {
         </ThemedText>
       ) : (
         <>
-          <ThemedText testID="break-countdown" type="title" accessibilityRole="timer">
+          <SkyWindow fill={progress} width={windowWidth} />
+          <ThemedText testID="break-countdown" type="title" numeric style={styles.countdown} accessibilityRole="timer">
             {remainingMs !== null ? formatCountdown(remainingMs) : ''}
           </ThemedText>
           <ThemedText testID="break-instruction" style={styles.instruction}>
@@ -182,6 +192,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.four,
     padding: Spacing.four,
+  },
+  countdown: {
+    fontSize: 96,
+    lineHeight: 104,
+    textAlign: 'center',
   },
   instruction: {
     textAlign: 'center',

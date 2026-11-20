@@ -62,9 +62,9 @@ describe.each(variants)('app.config (%s)', (variant) => {
     expect(plugins.indexOf('./plugins/without-push-entitlement.js')).toBeLessThan(plugins.indexOf('expo-notifications'));
   });
 
-  it('ships as 2.1.0 (versionCode 20100, build 1) and declares no non-exempt encryption', () => {
-    expect(config.version).toBe('2.1.0');
-    expect(config.android?.versionCode).toBe(20100);
+  it('ships as 2.2.0 (versionCode 20200, build 1) and declares no non-exempt encryption', () => {
+    expect(config.version).toBe('2.2.0');
+    expect(config.android?.versionCode).toBe(20200);
     expect(config.ios?.buildNumber).toBe('1');
     expect(config.ios?.config?.usesNonExemptEncryption).toBe(false);
   });

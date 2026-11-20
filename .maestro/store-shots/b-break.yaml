@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+name: Store screenshots B - leaves a running break screen (kind from KIND) for a screenshot
+# Run against the production Release build. Not part of the normal suite.
+---
+- openLink: ${SCHEME}://break?kind=${KIND}
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible:
+      id: break-countdown
+    timeout: 20000

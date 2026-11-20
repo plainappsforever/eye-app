@@ -1,18 +1,31 @@
+import brand from './src/constants/brand.json';
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 // One codebase, three installable variants that can sit side by side on a device.
 // Select with APP_VARIANT (set by scripts/native.sh and eas.json).
 // MOVE_SPEC M8 (D73): the app is "Eye Rest & Move" everywhere in the UI; `name` is what sits under the
-// launcher icon, so it is the short "Rest & Move". The ids, schemes and slug keep the old `eyeapp` /
-// `eye-app` spelling on purpose: renaming them would make an update a different app (data, widget, tile).
+// launcher icon, so it is the short "Rest & Move". Store build (2026-11-07): ids are com.plainapps.eyerestmove*
+// (nothing was ever published under com.tim.*); schemes and slug keep the `eyeapp` / `eye-app` spelling.
 const VARIANTS = {
-  development: { name: 'Rest & Move Dev', id: 'com.tim.eyeapp.dev', scheme: 'eyeapp-dev' },
-  preview: { name: 'Rest & Move Preview', id: 'com.tim.eyeapp.preview', scheme: 'eyeapp-preview' },
-  production: { name: 'Rest & Move', id: 'com.tim.eyeapp', scheme: 'eyeapp' },
+  development: { name: 'Rest & Move Dev', id: 'com.plainapps.eyerestmove.dev', scheme: 'eyeapp-dev' },
+  preview: { name: 'Rest & Move Preview', id: 'com.plainapps.eyerestmove.preview', scheme: 'eyeapp-preview' },
+  production: { name: 'Rest & Move', id: 'com.plainapps.eyerestmove', scheme: 'eyeapp' },
 } as const;
+
+// D24: splash and Android icon background come from the identity file (src/constants/brand.json). The sheet asks for a pale
+// sky icon background, so the adaptive icon uses the light background, not the accent.
+const IDENTITY = {
+  splash: { light: brand.light.background, dark: brand.dark.background },
+  iconBackground: brand.light.background,
+};
 
 type Variant = keyof typeof VARIANTS;
 
+// A Release build of Xcode (expo-constants' app-config phase runs this file with CONFIGURATION=Release) without APP_VARIANT would
+// silently embed the development variant. Fail closed (loyalty-cards D54, safe-share).
+if (process.env.APP_VARIANT === undefined && /^release/i.test(process.env.CONFIGURATION ?? '')) {
+  throw new Error('APP_VARIANT is not set in a Release build. Prefix the command with APP_VARIANT=production (or preview), see docs/RELEASE_KIT.md.');
+}
 const variant = (process.env.APP_VARIANT ?? 'development') as Variant;
 if (!(variant in VARIANTS)) {
   throw new Error(`Unknown APP_VARIANT "${variant}". Use development, preview or production.`);
@@ -74,9 +87,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name,
   slug: 'eye-app',
-  // RELEASE_KIT §2 / 1c row 14 (D93): versionName = this; Android versionCode MMmmpp (2.1.0 = 20100,
+  // RELEASE_KIT §2 / 1c row 14 (D93): versionName = this; Android versionCode MMmmpp (2.2.0 = 20200, 2.1.0 = 20100,
   // every upload higher); iOS build number restarts at 1 for each new version.
-  version: '2.1.0',
+  version: '2.2.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme,
@@ -86,6 +99,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     buildNumber: '1',
     icon: './assets/expo.icon',
     // RELEASE_KIT 1c row 13: no encryption beyond the OS's own (no network at all) - export compliance.
+    // Writes ITSAppUsesNonExemptEncryption=false (docs-export-compliance-2026-11-06: eye-app has no own crypto).
     config: { usesNonExemptEncryption: false },
     ...(appleTeamId ? { appleTeamId } : {}),
     // REVIEW_V2 S13 (D88): required-reason APIs of the app bundle. The pods' own manifests are merged
@@ -104,9 +118,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: id,
-    versionCode: 20100,
+    versionCode: 20200,
     adaptiveIcon: {
-      backgroundColor: '#E6F4FE',
+      backgroundColor: IDENTITY.iconBackground,
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -127,7 +141,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Release variants: no Local Network keys from the dev launcher (only the dev build has it). First for the same reason.
     ...(variant === 'development' ? [] : ['./plugins/without-dev-network-keys.js']),
     'expo-router',
-    ['expo-splash-screen', { backgroundColor: '#558B2F', image: './assets/images/splash-icon.png', imageWidth: 76 }],
+    ['expo-splash-screen', { backgroundColor: IDENTITY.splash.light, dark: { backgroundColor: IDENTITY.splash.dark }, image: './assets/images/splash-icon.png', imageWidth: 76 }],
     'expo-sqlite',
     [
       'expo-notifications',
@@ -151,6 +165,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       ? [
           // Before expo-widgets on purpose (its target must exist when this plugin's mod runs).
           './plugins/with-widget-privacy-manifest.js',
+          // Store builds: expo writes DEVELOPMENT_TEAM only on the app target; the widget extension needs it too.
+          ['./plugins/with-extension-team.js', { appleTeamId }] as [string, unknown],
           [
             'expo-widgets',
             {

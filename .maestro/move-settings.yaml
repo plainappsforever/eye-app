@@ -22,7 +22,7 @@ name: Move breaks settings - toggles, interval, Move hours persist across relaun
     selected: true
 - assertVisible:
     id: move-hours-range-label
-    text: "9:00 AM – 6:00 PM"
+    text: "9:00 AM to 6:00 PM"
 - assertVisible:
     id: move-weekday-1
     selected: true
@@ -38,7 +38,7 @@ name: Move breaks settings - toggles, interval, Move hours persist across relaun
     id: move-hours-end-plus
 - assertVisible:
     id: move-hours-range-label
-    text: "9:00 AM – 6:30 PM"
+    text: "9:00 AM to 6:30 PM"
 - scrollUntilVisible:
     element:
       id: eye-toggle
@@ -95,7 +95,7 @@ name: Move breaks settings - toggles, interval, Move hours persist across relaun
     selected: true
 - assertVisible:
     id: move-hours-range-label
-    text: "9:00 AM – 6:30 PM"
+    text: "9:00 AM to 6:30 PM"
 # Move breaks off: no move line, no Moved count, the interval chips are hidden.
 # (Idempotent retry: on a loaded Mac one iOS tap here did not register.)
 - retry:
@@ -148,7 +148,7 @@ name: Move breaks settings - toggles, interval, Move hours persist across relaun
     id: move-hours-end-minus
 - assertVisible:
     id: move-hours-range-label
-    text: "9:00 AM – 6:00 PM"
+    text: "9:00 AM to 6:00 PM"
 - assertVisible:
     id: move-weekday-6
     selected: false
